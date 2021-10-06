@@ -8,6 +8,25 @@
 import pandas as pd
 from skimage.io import imread
 
+#def get_coords(wld_array,rows,cols)
+# Returns the xmin, xmax, ymin, ymax of the jpg
+# @Params (wld_array,rows,cols)
+#     wld_array: float list containing [XCellSize,YCellSize,UpperleftX,UpperleftY]
+#     rows: number of rows in jpg
+#     cols: number of cols in jpg
+def get_coords(wld_array,rows,cols):
+       # Get all the variables out of the array
+   WorldY=wld_array.pop();
+   WorldX=wld_array.pop();
+   YCellSize=wld_array.pop();
+   XCellSize=wld_array.pop();
+   del wld_array
+
+   xMin = WorldX - (XCellSize / 2)
+   yMax = WorldY - (YCellSize / 2)
+   xMax = (WorldX + (cols * XCellSize)) - (XCellSize / 2)
+   yMin = (WorldY + (rows * YCellSize)) - (YCellSize / 2)
+   return xMin, xMax, yMin, yMax
 
 # def read_xml():
 #    (do stuff)
@@ -34,16 +53,11 @@ def read_wld(wld_file_path):
 wld_file_path ='PythonWLDtoCSV\sampleData\LC08_014035_20200604.wld'
 wld_array=read_wld(wld_file_path)
 print(wld_array)
-# wld_info = read_xml(wld_file)
-# rows, cols, bands = imread(jpeg_file).shape
+rows, cols, bands = imread('PythonWLDtoCSV\sampleData\LC08_014035_20200604.jpg').shape
+xmin, xmax, ymin, ymax = get_coords(wld_array,rows,cols)
+print(xmin, xmax, ymin, ymax)
 
-# def get_coords():
-   # XMin = WorldX - (XCellSize / 2)
-   # YMax = WorldY - (YCellSize / 2)
-   # XMax = (WorldX + (Cols * XCellSize)) - (XCellSize / 2)
-   # YMin = (WorldY + (Rows * YCellSize)) - (YCellSize / 2)
-#     return xmin, xmax, ymin, ymax
-# xmin, xmax, ymin, ymax = get_coords(worldx, xcellsize, worldy, ycellsize, cols, rows)
+
 
 # def parse_crs():
 #    (do stuff)
