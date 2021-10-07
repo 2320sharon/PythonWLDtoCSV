@@ -26,7 +26,7 @@ def read_wld(wld_file_path):
    return wld_array
 
 #def get_coords(wld_array,rows,cols)
-# Returns the xmin, xmax, ymin, ymax of the jpg
+# Returns the xMin, xMax, yMin, yMax of the jpg
 # @Params (wld_array,rows,cols)
 #     wld_array: float list containing [XCellSize,YCellSize,UpperleftX,UpperleftY]
 #     rows: number of rows in jpg
@@ -48,16 +48,25 @@ def get_coords(wld_array,rows,cols):
 def read_xml(xml_path):
    tree = ET.parse(xml_path)
    root = tree.getroot()
-   print(root)
    dataAxisToSRSAxisMapping=''
-   # print(root.attrib)
    for child in root:
       print(child.tag, child.attrib,child.text)
       if child.tag == 'SRS':
          dataAxisToSRSAxisMapping=child.text
    
+
+   # Get this string PROJCS["WGS 84 / UTM zone 18N"
+   commaPosition= dataAxisToSRSAxisMapping.find(',');
+   #Slice string from PROJCS to first , not inclusive
+   dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[0:commaPosition]
+   PROCJSPosition= dataAxisToSRSAxisMapping.find('S');
+   #Remove PROJCS
+   dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[(PROCJSPosition+1):]
+   #add a closing ]
+   dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping+"]"
    print(dataAxisToSRSAxisMapping)
-   #  return xml_info
+   #GOAL: (["WGS 84 / UTM zone 18N"])
+   return  dataAxisToSRSAxisMapping
 
 
 # def parse_crs():
