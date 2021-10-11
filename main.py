@@ -6,6 +6,7 @@
 
 # PseudoCode
 import pandas as pd
+import csv
 from skimage.io import imread
 import xml.etree.ElementTree as ET
 
@@ -76,15 +77,45 @@ def read_xml(xml_path):
    #GOAL: (["WGS 84 / UTM zone 18N"])
    return  dataAxisToSRSAxisMapping
 
+
+def create_file_list(path_to_jpgs):
+    #OS MAY HAVE ISSUES WITH LINUX AND MAC
+    if os.path.exists(path_to_jpgs):                #ensure the path exists before attempting to access the directory
+        files_list=os.listdir(path_to_jpgs)
+        if files_list != []:                    #Ensure it is not an empty directory
+            npz_list = [file for file in files_list if file.lower().endswith('.jpg') and os.path.isfile(os.path.join(path_to_jpgs, file))]
+            print(npz_list)
+            return npz_list 
+        else:
+            print("empty list")
+            return []
+    else:
+        print("path does not exist")
+        return []
+
 def read_jpg(jpg_path):
    # Extract image name from path
    jpg_name=jpg_path.split('\\')[-1];
    print(jpg_name)
    return jpg_name
 
+# def convert_to_list(xmin, xmax, ymin, ymax,crs_string)
+# Returns list containing the following data
+# image filename,
+# Easting min (XMin),
+# Easting max (XMax),
+# Northing min (YMin),
+# Norhting max (YMax),
+# Coordinate Reference System (e.g. wgs 84 / utm zone 18N).
+
+# @Params (jpg_name,xmin, xmax, ymin, ymax,crs_string)
+
+def convert_to_list(jpg_name,xmin, xmax, ymin, ymax,crs_string):
+       return [jpg_name,xmin,xmax,ymin,ymax,crs_string]
+      
 # def write_csv(xmin, xmax, ymin, ymax,crs_string)
 # Returns true on successful write
-# Write line to csv file\
+# Write line to csv file
 # image filename,
 # Easting min (XMin),
 # Easting max (XMax),
@@ -93,13 +124,20 @@ def read_jpg(jpg_path):
 # Coordinate Reference System (e.g. wgs 84 / utm zone 18N).
 # # 
 # @Params (xml_path)
-#     xml_path: string representing the path to the XML file
+#     xml_path: string representing the path to the XML file     
+def write_csv(data,csvfile):
+   try:
+      with open(csvfile, mode='w') as sample_csv:
+         csv_writer = csv.writer(sample_csv, delimiter=',', quotechar='\'', quoting=csv.QUOTE_MINIMAL)
+         csv_writer.writerow(data)
+   except:
+      print("Error occured")
+      # Find out what kind of error this can throw
+      #stop program and trigger a popup
 
-def write_csv(xmin, xmax, ymin, ymax,crs_string):
-  
-   write_csv(xmin, xmax, ymin, ymax,crs_string )
 
-# xml_info = read_xml(xml_file)
+
+
 wld_file_path ='PythonWLDtoCSV\sampleData\LC08_014035_20200604.wld'
 xml_path='PythonWLDtoCSV\sampleData\LC08_014035_20200604.jpg.aux.xml'
 jpg_path='PythonWLDtoCSV\sampleData\LC08_014035_20200604.jpg'
@@ -110,8 +148,9 @@ rows, cols, bands = imread(jpg_path).shape
 xmin, xmax, ymin, ymax = get_coords(wld_array,rows,cols)
 print(xmin, xmax, ymin, ymax)
 crs_string = read_xml(xml_path)
-# write_csv(xmin, xmax, ymin, ymax,crs_string )
-read_jpg(jpg_path)
+jpg_name=read_jpg(jpg_path)
+data = convert_to_list(jpg_name,xmin, xmax, ymin, ymax,crs_string)
+write_csv(data,'sample.csv' )
 
 # Commmand line interface that takes folder containing files and gets them 
 # All in one file???
@@ -120,6 +159,8 @@ read_jpg(jpg_path)
 # Notify the user when done.
 
 # Allow user to specify the name of the csv
+
+#Specify the location to save csv file to
 
 # Allow user to specifly location to save file in 
 # Check if Linux and Windows differ
