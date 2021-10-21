@@ -247,17 +247,16 @@ class WLDtoCSVClass:
 
             IOError: An error occured while trying to load the npz file as a pickle
             """
-            # empty list to hold file contents as strings
-            wld_array=[]
-            with open(wld_file_path) as f:
-                wld_array = f.readlines()
-                # Remove both rotations
-                wld_array.pop(1)
-                wld_array.pop(1)
-                #Convert Strings to float
-                for i,val in enumerate(wld_array):
-                    wld_array[i] = float(wld_array[i])
-
+        # empty list to hold file contents as strings
+        wld_array=[]
+        with open(wld_file_path) as f:
+            wld_array = f.readlines()
+            # Remove both rotations
+            wld_array.pop(1)
+            wld_array.pop(1)
+            #Convert Strings to float
+            for i,val in enumerate(wld_array):
+                wld_array[i] = float(wld_array[i])        
             return wld_array
 
     
