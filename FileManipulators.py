@@ -84,9 +84,11 @@ def verify_destination_exists(logger):
     if not check_folder_exists(pathlib.Path.cwd(),"destination_files"):
         logger.debug("\n The directory destination_files is missing and will be created.")
         os.mkdir("destination_files")
+    
+    return pathlib.Path.cwd().joinpath('destination_files')
 
 #TODO pass the destination name to this function
-def open_result(logger):
+def open_result(logger,destinationPath):
     """"Opens the directory called destination_files in a gui interface according the user's PC type.
         
     Verifies the directory called destination_files exists within the current working directory.
@@ -100,9 +102,18 @@ def open_result(logger):
     Raises:
         None.
         """
-    verify_destination_exists(logger)
+    # If the destinationPath is blank make the default location in the Program's directory
+    print("\n destinationPath",destinationPath)
+    if destinationPath == "":
+        destPath=verify_destination_exists(logger)
+        print("\n destinationPath empty")
+        print("\n destinationPath empty: ",destPath)
+    else:
+        print("\n destinationPath populated")
+        destPath=pathlib.Path(destinationPath)
+    print("\n destPath",destPath)
     if os.name != 'posix':
-        os.startfile(pathlib.Path.cwd().joinpath('destination_files'), 'open')
+        os.startfile(destPath, 'open')
     else:
         os.system('xdg-open '+os.getcwd()+os.sep+'destination_files')
 

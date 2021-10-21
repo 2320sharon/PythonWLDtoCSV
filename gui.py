@@ -181,7 +181,7 @@ class MainApp(tk.Tk):
         #4.Place the vertical scrollbar after the horizontal one
         self.ylist_scroll_bar.pack(side='right',fill='y')
 
-        self.button_result = tk.Button( text="Open CSV",command=lambda:FileManipulators.open_result(self.logger), background=MainApp.button_purple,fg="white")
+        self.button_result = tk.Button( text="Open CSV",command=lambda:self.chooseDestination(self.logger), background=MainApp.button_purple,fg="white")
         self.button_result.pack(side='bottom',pady=10)
 
         self.button_run = tk.Button(text="Run", command=self.run_code,background=MainApp.button_purple,fg="white")
@@ -327,7 +327,7 @@ class MainApp(tk.Tk):
         npzlist=list(npztuple)
         return npzlist
 
-    def checkValidFileType(file):
+    def checkValidFileType(self,file):
         if file.lower().endswith('.jpg') or file.lower().endswith('.wld') or file.lower().endswith('.xml'):
             return True
         else:
@@ -382,8 +382,16 @@ class MainApp(tk.Tk):
         else: 
             self.pathDestinationPathlabel.config( text=f"{filePath}")
 
-      
+    def chooseDestination(self, logger):
+        # Get contents of destination path label
+        destinationPath= self.pathDestinationPathlabel.cget("text")
+        print("\ndestinationPath",destinationPath)
+        print("\ntype(destinationPath)",type(destinationPath))
+        FileManipulators.open_result(logger,destinationPath)
 
+           
+
+      
     def run_code(self):
         """"Creates a csv file from the files in the listbox.
        
