@@ -1,5 +1,10 @@
+# Python WLD to CSV Converter
+#@Author Sharon Fitzpatrick
+
+# Description: Converts WLD files to CSV files
+# ------------------------------------------------------
 import tkinter as tk
-from NPZClass import *
+from WLDtoCSVClass import *
 import FileManipulators
 from tkinter import filedialog, messagebox, ttk
 
@@ -13,7 +18,7 @@ class InstructionFrame(tk.Frame):
         label_title.config( foreground= "white",background=parent.frame_color)
         label_title.grid(row=0,column=2,pady=5)
 
-# @TODO: add instructions that all jpg,xml, and .wld must have the same name to make a corresponding entry in the csv file
+    #TODO: add instructions that all jpg,xml, and .wld must have the same name to make a corresponding entry in the csv file
         label_instructions = tk.Label(self, text="Instructions:\n1. Select the folder where the .wld, xml, and jpg files are located by using the \"Select Folder\" button.\n2. Click the \"Run\" button to convert the files to csv.\n3. Click \"Open Result\" to see your resulting csv file. ")
         label_instructions.config( foreground= "white",background=parent.frame_color)
         label_instructions.grid(row=0,column=2,pady=5)
@@ -97,7 +102,7 @@ class MainApp(tk.Tk):
         self.logger.info("\nSuccessfully created base app\n")
         #make sure the destination folder exists to store the resulting JSON file
         self.wait_visibility()
-        FileManipulators.verify_destination_exists(self.logger)
+        # FileManipulators.verify_destination_exists(self.logger)
         #create the main app's gui
         self.build_main_app()
         #make the subframes within the main app
@@ -240,14 +245,14 @@ class MainApp(tk.Tk):
         else:
             self.logger.debug(f"\nUnsuccessful JSON CREATION\nThe file was written to {destination_path}.\n")
 
-    def read_files(self,source_path,npz_list,destination_path):
-        """"Reads all the files in npz_list that are in the directory specified by source_path to the directory in destination_path
-       Reads the files in the npz_list and appends each filename in npz_list with the source_path to create an absolute path to the .npz file.
+    def read_files(self,source_path,fileList,destination_path):
+        """"Reads all the files in fileList that are in the directory specified by source_path to the directory in destination_path
+       Reads the files in the fileList and appends each filename in fileList with the source_path to create an absolute path to the .npz file.
        It then extracts all the relevant data from the .npz files and writes it the location specifed by destination_path.
         Args:
              self: An instance of the MainApp class.
              source_path: pathlib.path location of the directory containing .npz files to be processed
-             npz_list: A list of .npz files that will be processed
+             fileList: A list of files that will be processed
              destination_path: pathlib.path location of the file that was written to. 
         Returns:
            None.
@@ -258,17 +263,17 @@ class MainApp(tk.Tk):
             IOError: An error occured while accessing the .npz file or json file.
         """
         successful_write=False
-        if npz_list == []:
+        if fileList == []:
             self.logger.exception("Empty listbox provided")
             self.EmptySourceMsgBox(source_path)
         try:
             with open(destination_path,'a') as outfile:
-                for entry in npz_list:
+                for entry in fileList:
                     npz_file_path=source_path.joinpath(entry)
                     print(npz_file_path)
                     filename,file_extension= os.path.splitext(npz_file_path.name)
                     print(filename,file_extension)
-                    obj=JSON_npz(npz_file_path, npz_file_path.name);
+                    obj=WLDtoCSVClass(npz_file_path, npz_file_path.name);
                     try:
                         obj.check_file()                         #if its a valid npz file then read the file
                         obj.get_user_ID()
@@ -324,9 +329,9 @@ class MainApp(tk.Tk):
 
     def checkValidFileType(file):
         if file.lower().endswith('.jpg') or file.lower().endswith('.wld') or file.lower().endswith('.xml'):
-            return true
+            return True
         else:
-            return false
+            return False
 
     def create_file_list(self,filesPath):
         #Function to convert all the items in the path to a list containing only files
@@ -336,6 +341,7 @@ class MainApp(tk.Tk):
             if files_list != []:                    #Ensure it is not an empty directory
                 validFilesList = [file for file in files_list if self.checkValidFileType(file) and os.path.isfile(os.path.join(filesPath, file))]
                 print(validFilesList)
+                #TODO: parse this list into tuples
                 return validFilesList 
             else:
                 print("empty list")
@@ -393,6 +399,7 @@ class MainApp(tk.Tk):
            None.
         """  
         FileManipulators.verify_destination_exists(self.logger)
+        #Replace with Destination path user chose
         destination_path=FileManipulators.create_destination_file()
         path_npz_str = self.pathSourcePathlabel.cget("text")                      #receieves the path where the files are located.
         path_npz=pathlib.Path(str(path_npz_str))
