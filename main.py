@@ -3,8 +3,6 @@
 
 # Description: Converts WLD files to CSV files
 # ------------------------------------------------------
-
-# PseudoCode
 import pandas as pd
 import csv
 from skimage.io import imread
@@ -77,7 +75,6 @@ def read_xml(xml_path):
    #GOAL: (["WGS 84 / UTM zone 18N"])
    return  dataAxisToSRSAxisMapping
 
-
 def create_file_list(path_to_jpgs):
     #OS MAY HAVE ISSUES WITH LINUX AND MAC
     if os.path.exists(path_to_jpgs):                #ensure the path exists before attempting to access the directory
@@ -98,6 +95,7 @@ def read_jpg(jpg_path):
    jpg_name=jpg_path.split('\\')[-1];
    print(jpg_name)
    return jpg_name
+
 
 # def convert_to_list(xmin, xmax, ymin, ymax,crs_string)
 # Returns list containing the following data
