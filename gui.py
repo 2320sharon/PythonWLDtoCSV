@@ -352,14 +352,29 @@ class MainApp(tk.Tk):
             self.ErrorMsgBbox(msg=f"ERROR\nThe folder {filesPath} does not exist.\n")
             return []
 
+    def createValidFilesList(self,filesList):
+        # ALL POSSIBLE FILE TYPES
+        FILE_TYPES=['jpg','wld','xml']
+        # Copy of file types that can be manipulated
+        currentFileTypes=FILE_TYPES.copy()
+        # sort files list by filenames
+        print("\n Before Sorting",filesList)
+        filesList.sort()
+        print("\n After Sorting",filesList)
+
+        return filesList
+
+
     def populateFilesList(self, filePath):
          #Update the list box
-        files_list=self.create_file_list(filePath)
+        filesList=self.create_file_list(filePath)
+
+        validFilesList=self.createValidFilesList(filesList)
 
         #delete everything from listbox first to ensure clean insert
         self.deleteAll_listbox()
         #insert all the files into the listbox
-        for item in files_list:
+        for item in  validFilesList:
             self.filesListbox.insert('end',item)
 
     def open_file_dialog(self, isSourceLocation):
@@ -406,7 +421,7 @@ class MainApp(tk.Tk):
         Raises:
            None.
         """  
-        FileManipulators.verify_destination_exists(self.logger)
+        FileManipulators.createDestinationFolder(self.logger)
         #Replace with Destination path user chose
         destination_path=FileManipulators.create_destination_file()
         path_npz_str = self.pathSourcePathlabel.cget("text")                      #receieves the path where the files are located.
