@@ -444,6 +444,13 @@ class MainApp(tk.Tk):
         for item in  validFilesList:
             self.filesListbox.insert('end',item)
 
+    def getSourcePath(self):
+        sourcePath = self.pathSourcePathlabel.cget("text")
+        if sourcePath == "":
+           raise EmptySourcePath
+        else:
+            return sourcePath
+
     def open_file_dialog(self, isSourceLocation):
         """"Prompts the user to specify a directory where the files are located. Then saves the absolute path to a label and inserts all
         the files into the listbox if isSourceLocation = true, otherwise it update the pathDestinationPathlabel to contain the path to the directory 
@@ -495,19 +502,20 @@ class MainApp(tk.Tk):
         Raises:
            None.
         """
-        destinationPath = self.pathDestinationPathlabel.cget("text")
-        if destinationPath == "":
-            destPath=FileManipulators.createDestinationFolder(self.logger)
-        else:
-            destPath=pathlib.Path(destinationPath)
-        FileManipulators.createDestinationFolder(self.logger)
-        #Replace with Destination path user chose
-        destination_path=FileManipulators.create_destination_file()
-        path_npz_str = self.pathSourcePathlabel.cget("text")                      #receieves the path where the files are located.
-        path_npz=pathlib.Path(str(path_npz_str))
-        npz_list=self.readListbox()                                 #gets the list of npz files from the listbox.
-        self.read_files(path_npz,npz_list,destination_path)
-        FileManipulators.delete_empty_file(destination_path,self.logger)
+        destinationPath=self.getDestinationPath()
+        print("\ndestinationPath", destinationPath)
+
+        try:
+            sourcePath=self.getSourcePath()
+            print(sourcePath)
+        except  EmptySourcePath as emptySourcePathError:
+            self.logger.exception(emptySourcePathError)
+            self.ErrorMsgBbox( emptySourcePathError.msg)
+
+        filesList=self.readListbox()                                 #files from the listbox.
+        print(filesList)
+        # self.read_files(sourcePath,filesList,destinationPath)
+        # FileManipulators.delete_empty_file(destinationPath,self.logger)
 
 if __name__ == "__main__":
     #Creates a logger and the corresponding logfile.
