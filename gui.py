@@ -228,7 +228,7 @@ class MainApp(tk.Tk):
         self.instructionframe=InstructionFrame(self)
         self.instructionframe.pack(side='top')
 
-    def alert_JSON_write(self,write_status,destination_path):
+    def alertWrite(self,write_status,destination_path):
         """"Writes a message to the log file depending on whether a successful write to the json file occured or not.
        If write status is true it writes success message to the log file if at least one .npz file was written to the JSON file
        specified by the destination_path.
@@ -247,7 +247,7 @@ class MainApp(tk.Tk):
         else:
             self.logger.debug(f"\nUnsuccessful JSON CREATION\nThe file was written to {destination_path}.\n")
 
-    def read_files(self,source_path,fileList,destination_path):
+    def readFiles(self,source_path,fileList,destination_path):
         """"Reads all the files in fileList that are in the directory specified by source_path to the directory in destination_path
        Reads the files in the fileList and appends each filename in fileList with the source_path to create an absolute path to the .npz file.
        It then extracts all the relevant data from the .npz files and writes it the location specifed by destination_path.
@@ -286,7 +286,7 @@ class MainApp(tk.Tk):
                                 outfile.write(json_data)                #write the json data to the json file
                                 outfile.write("\n")                     #put a new line character after each json write
                                 successful_write=True
-                                self.alert_JSON_write(True,destination_path)
+                                self.alertWrite(True,destination_path)
                             except UltimateException as strong_error:
                                 self.logger.exception(strong_error)
                                 self.ErrorMsgBbox("ERROR: Cannot create a JSON file exiting now.")
@@ -304,7 +304,7 @@ class MainApp(tk.Tk):
         if successful_write:
             self.SuccessMsgBox(destination_path)
         if not successful_write:
-            self.alert_JSON_write(False,destination_path)
+            self.alertWrite(False,destination_path)
 
     def delete_item_list(self):
         """"Deletes the selected item from the listbox"""

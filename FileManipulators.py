@@ -2,7 +2,6 @@ from datetime import datetime
 import os
 import pathlib
 
-
 def create_destination_file():
     """"Creates a csv file in the in a folder called destination_files
         
@@ -20,7 +19,7 @@ def create_destination_file():
         None.
         """
     timestampStr = datetime.now().strftime("%d-%b-%Y_%H_%M_%S")
-    dest_file="npz_data_"+timestampStr+".csv"
+    dest_file="CSVData"+timestampStr+".csv"
     result_path = pathlib.Path.cwd().joinpath('destination_files')
     destination_path=result_path.joinpath(dest_file)
     return destination_path
@@ -28,7 +27,7 @@ def create_destination_file():
 def delete_empty_file(path_name,logger):
     """"Deletes any empty json files generated.
         
-    Checks for empty .json files in the specified path_name of size 0 (AKA empty). If it finds one it deletes it.
+    Checks for empty csv files in the specified path_name of size 0 (AKA empty). If it finds one it deletes it.
         
     Args:
         path_name: A pathlib.Path containing the path to folder containing empty json files.

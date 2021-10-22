@@ -145,6 +145,7 @@ print(wld_array)
 rows, cols, bands = imread(jpg_path).shape
 xmin, xmax, ymin, ymax = get_coords(wld_array,rows,cols)
 print(xmin, xmax, ymin, ymax)
+
 crs_string = read_xml(xml_path)
 jpg_name=read_jpg(jpg_path)
 data = convert_to_list(jpg_name,xmin, xmax, ymin, ymax,crs_string)

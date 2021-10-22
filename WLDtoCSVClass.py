@@ -82,28 +82,6 @@ class WLDtoCSVClass:
             logger.error(f"ERROR \n Invalid file type {file_extension} is not allowed! \n File: {self.file_path} is not a valid {fileType} file. \n End of ERROR")
             raise IncorrectFileTypeException(filename=self.file_name)
 
-    def convert_to_list(jpg_name,xmin, xmax, ymin, ymax,crs_string):
-        """convert_to_list # Returns list containing the following data
-            image filename,
-            Easting min (XMin),
-            Easting max (XMax),
-            Northing min (YMin),
-            Norhting max (YMax),
-            Coordinate Reference System (e.g. wgs 84 / utm zone 18N).
-
-        Args:
-            jpg_name (string): image filename
-            xmin (double): Easting min
-            xmax (double): Easting max 
-            ymin (double): Northing min 
-            ymax (double): Northing max 
-            crs_string (string): Coordinate Reference System (e.g. wgs 84 / utm zone 18N)
-
-        Returns:
-            [type]: [description]
-        """
-        return [jpg_name,xmin,xmax,ymin,ymax,crs_string]
-
     def createDataTuple(self,filepath):
             """createDataTuple returns a tuple containing the matching jpg,xml,wld. If a non matching file is found
             it is added misMatched files list.
@@ -121,7 +99,7 @@ class WLDtoCSVClass:
                 [array of tuples]:array made of matching tuples
             """
 
-    def write_csv(data,csvfile):
+    def writeCSV(self,data,csvfile):
         """write_csv write the content in the array, data, to the corresponding row given by the path of the
         csvfile.
 
