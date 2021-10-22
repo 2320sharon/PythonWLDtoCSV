@@ -34,6 +34,17 @@ class EmptyFile(Exception):
     def __str__(self):
         return (f"{self.msg}")
 
+class EmptySourcePath(Exception):
+    """EmptySourcePath: raised when a there are no valid files.
+    Args:
+        Exception: Inherits from the base exception class
+    """
+    def __init__(self, msg="ERROR: There is not path to read files from."):
+        self.msg=msg
+        super().__init__(self.msg)
+    def __str__(self):
+        return (f"{self.msg}")
+
 class UltimateException(Exception):
     """UltimateException: raised when a file the error is not recoverable forcing the program to quit.
     Args:
