@@ -66,72 +66,6 @@ class WLDtoCSVClass:
     """
     # def __init__(self):
 
-    def read_xml(xml_path):
-        """read_xml: returns (["WGS 84 / UTM zone 18N"]) extracted from dataAxisToSRSAxisMapping in the XML
-
-        [extended_summary]
-
-        Args:
-            xml_path (string): representing the path to the XML file.
-
-        Raises:
-            IncorrectFileTypeException: [description]
-
-        Returns:
-            string: (["WGS 84 / UTM zone 18N"]) extracted from dataAxisToSRSAxisMapping in the XML
-        """
-        tree = ET.parse(xml_path)
-        root = tree.getroot()
-        dataAxisToSRSAxisMapping=''
-        for child in root:
-            print(child.tag, child.attrib,child.text)
-            if child.tag == 'SRS':
-                dataAxisToSRSAxisMapping=child.text
-        
-
-        # Get this string PROJCS["WGS 84 / UTM zone 18N"
-        commaPosition= dataAxisToSRSAxisMapping.find(',');
-        #Slice string from PROJCS to first , not inclusive
-        dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[0:commaPosition]
-        PROCJSPosition= dataAxisToSRSAxisMapping.find('S');
-        #Remove PROJCS
-        dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[(PROCJSPosition+1):]
-        #add a closing ]
-        dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping+"]"
-        print(dataAxisToSRSAxisMapping)
-        #GOAL: (["WGS 84 / UTM zone 18N"])
-        return  dataAxisToSRSAxisMapping
-
-    def read_jpg(jpg_path):
-            # Extract image name from path
-            jpg_name=jpg_path.split('\\')[-1];
-            print(jpg_name)
-            return jpg_name
-
-    def get_coords(wld_array,rows,cols):
-        """get_coords Returns the xMin, xMax, yMin, yMax of the jpg
-
-        Args:
-            wld_array (float list): containing [XCellSize,YCellSize,UpperleftX,UpperleftY]
-            rows (int): number of rows in jpg
-            cols (int):  number of columns in jpg
-
-        Returns:
-             xMin, xMax, yMin, yMax
-        """
-        # Get all the variables out of the array
-        WorldY=wld_array.pop();
-        WorldX=wld_array.pop();
-        YCellSize=wld_array.pop();
-        XCellSize=wld_array.pop();
-        del wld_array
-
-        xMin = WorldX - (XCellSize / 2)
-        yMax = WorldY - (YCellSize / 2)
-        xMax = (WorldX + (cols * XCellSize)) - (XCellSize / 2)
-        yMin = (WorldY + (rows * YCellSize)) - (YCellSize / 2)
-        return xMin, xMax, yMin, yMax
-
     def check_file(self,fileType):
         """check_file(self): checks if the file given is of type fileType.
 
@@ -230,33 +164,5 @@ class WLDtoCSVClass:
             print("path does not exist")
             return []
     
-    #TODO Add exception handling
-    #TODO Add exception handling documentation
-    def read_wld(self, wld_file_path):
-        """Returns a float list containing [XCellSize,YCellSize,UpperleftX,UpperleftY] 
-
-        Args:
-            self: instance variable
-            wld_file_path: string representing the path to the .wld file
-                    
-        Returns:
-            If successful: returns a dictionary containing data from the npz file.
-
-        Raises:
-            NPZCorruptException: An error occurred while reading the npz file.
-
-            IOError: An error occured while trying to load the npz file as a pickle
-            """
-        # empty list to hold file contents as strings
-        wld_array=[]
-        with open(wld_file_path) as f:
-            wld_array = f.readlines()
-            # Remove both rotations
-            wld_array.pop(1)
-            wld_array.pop(1)
-            #Convert Strings to float
-            for i,val in enumerate(wld_array):
-                wld_array[i] = float(wld_array[i])        
-            return wld_array
 
     
