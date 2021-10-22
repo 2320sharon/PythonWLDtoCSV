@@ -1,5 +1,5 @@
-class NPZCorruptException(Exception):
-    """NPZCorruptException: raised when file is in an invalid format
+class CorruptException(Exception):
+    """CorruptException: raised when file is in an invalid format
     Args:
         Exception: Inherits from the base exception class
     """

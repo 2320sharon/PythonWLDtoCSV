@@ -290,7 +290,7 @@ class MainApp(tk.Tk):
                             except UltimateException as strong_error:
                                 self.logger.exception(strong_error)
                                 self.ErrorMsgBbox("ERROR: Cannot create a JSON file exiting now.")
-                        except NPZCorruptException as err:
+                        except CorruptException as err:
                             self.logger.exception(err)
                             self.InvalidMsgBox(filename)
                     except IncorrectFileTypeException as npz_file_error:
@@ -355,18 +355,6 @@ class MainApp(tk.Tk):
             self.ErrorMsgBbox(msg=f"ERROR\nThe folder {filesPath} does not exist.\n")
             return []
 
-    def getExtension(self,file):
-        # returns only the extension of the file and check for xml extensions
-         fileName,extension = file.split(".",1) # split the file once
-         if extension.endswith(".xml"):
-            extension="xml"
-         return extension
-
-    def getFileName(self,file):
-        # returns only the filename
-         fileName,extension = file.split(".",1) # split the file once
-         return fileName
-
     def createValidFilesList(self,filesList):
         """createValidFilesList: Returns a list of all the files that had three matching filenames and each file was of type: jpg,xml,wld.
     
@@ -397,7 +385,7 @@ class MainApp(tk.Tk):
             fileName,extension = file.split(".",1) # split the file once
 
             if(skipFlag == 1 or skipFlag == 2 ):
-                --skipFlag
+                skipFlag=skipFlag-1  #skip processing the next two files that are known matches
                 goodFilesList.append(file)
                 continue
             elif( index+1 >= len(filesList) or index+2 >= len(filesList)):
@@ -405,13 +393,13 @@ class MainApp(tk.Tk):
                 if(index+1 < len(filesList)):
                      badFilesList.append(filesList[index+1])  #no more files in list after this
                 break
-            elif(fileName ==  self.getFileName(filesList[index+1]) and fileName ==  self.getFileName(filesList[index+2])):
+            elif(fileName ==  FileManipulators.getFileName(filesList[index+1]) and fileName ==  FileManipulators.getFileName(filesList[index+2])):
                 # print("Found a match")
-                extension1=self.getExtension(filesList[index+1])
+                extension1=FileManipulators.getExtension(filesList[index+1])
                 currentFileTypes.remove(extension)
                 if(extension1 in currentFileTypes):
                     currentFileTypes.remove(extension1)
-                extension2=self.getExtension(filesList[index+2])
+                extension2=FileManipulators.getExtension(filesList[index+2])
                 if(extension2 in currentFileTypes):
                     # print("MATCHED BY FILE EXTENSION")
                     skipFlag=2
@@ -484,7 +472,6 @@ class MainApp(tk.Tk):
             return pathlib.Path(destinationPath)
 
     def chooseDestination(self, logger):
-        # Check if the destination exists
         destinationPath=self.getDestinationPath()
         FileManipulators.open_result(logger,destinationPath)
 
@@ -512,8 +499,9 @@ class MainApp(tk.Tk):
             self.logger.exception(emptySourcePathError)
             self.ErrorMsgBbox( emptySourcePathError.msg)
 
-        filesList=self.readListbox()                                 #files from the listbox.
-        print(filesList)
+        filesList=self.readListbox()        #valid files from the listbox.
+        ArrayoffilesList=FileManipulators.getListofFiles(filesList)      
+        print(ArrayoffilesList)
         # self.read_files(sourcePath,filesList,destinationPath)
         # FileManipulators.delete_empty_file(destinationPath,self.logger)
 
