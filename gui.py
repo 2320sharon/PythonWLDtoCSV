@@ -108,11 +108,13 @@ class MainApp(tk.Tk):
         #make the subframes within the main app
         self.__create_frames()
 
+        self.Left_Frame=tk.Frame(self,pady=10,padx=10,background=MainApp.frame_color)
+        self.Left_Frame.pack(side='left',padx=10,pady=10)
 
-        #Frame to hold the "Choose a Folder" button and the corresponding labels
+        #Frame to hold the "Select Folder" button and the corresponding labels
         #-----------------------------------------------------------------
-        self.folder_frame=tk.Frame(self,height = 75,width = 180,pady=10,padx=10,background=MainApp.frame_color)
-        self.folder_frame.pack(side='left',padx=10,pady=10)
+        self.folder_frame=tk.Frame(self.Left_Frame,height = 75,width = 180,pady=10,padx=10,background=MainApp.frame_color)
+        self.folder_frame.pack(side='top',padx=10,pady=10)
 
         #pathSourcePathlabel labels the path containing the source directory exists. Empty by default
         self.pathSourcePathlabel=tk.Label(self.folder_frame, text="")
@@ -129,10 +131,10 @@ class MainApp(tk.Tk):
         self.Open_Folder_button.grid(row=2,column=0,pady=10,padx=5)
         #-------------------------------------------------------------------
 
-                #Frame to hold the "Choose a Folder" button and the corresponding labels
+        #Frame to hold the "Select Folder to hold Results" button and the corresponding labels
         #-----------------------------------------------------------------
-        self.folder_destination_frame=tk.Frame(self,height = 50,width = 100,pady=10,padx=10,background=MainApp.frame_color)
-        self.folder_destination_frame.pack(side='left',padx=10,pady=10)
+        self.folder_destination_frame=tk.Frame(self.Left_Frame,height = 50,width = 100,pady=10,padx=10,background=MainApp.frame_color)
+        self.folder_destination_frame.pack(side='bottom',padx=10,pady=10)
 
         #pathDestinationPathlabel labels the path containing the destination directory exists. Empty by default
         self.pathDestinationPathlabel=tk.Label(self.folder_destination_frame, text="")
@@ -312,7 +314,7 @@ class MainApp(tk.Tk):
         """"Deletes all items from the listbox"""
         self.filesListbox.delete(0,'end')
 
-    def read_npz_listbox(self):
+    def readListbox(self):
         """"Reads all items in the listbox.
        Gets the size of the listbox then reads all the items from the listbox and returns them as a list.
         Args:
@@ -328,6 +330,7 @@ class MainApp(tk.Tk):
         return npzlist
 
     def checkValidFileType(self,file):
+        # Returns true if the given file is of type , jpg, wld, or xml if it does not returns false
         if file.lower().endswith('.jpg') or file.lower().endswith('.wld') or file.lower().endswith('.xml'):
             return True
         else:
@@ -352,18 +355,82 @@ class MainApp(tk.Tk):
             self.ErrorMsgBbox(msg=f"ERROR\nThe folder {filesPath} does not exist.\n")
             return []
 
+    def getExtension(self,file):
+        # returns only the extension of the file and check for xml extensions
+         fileName,extension = file.split(".",1) # split the file once
+         if extension.endswith(".xml"):
+            extension="xml"
+         return extension
+
+    def getFileName(self,file):
+        # returns only the filename
+         fileName,extension = file.split(".",1) # split the file once
+         return fileName
+
     def createValidFilesList(self,filesList):
+        """createValidFilesList: Returns a list of all the files that had three matching filenames and each file was of type: jpg,xml,wld.
+    
+        Creates two lists,badFilesList and goodFilesList, which will hold the list of all the bad and good files respectiveally. A file is considered good
+        if it has two matching files with the same file name an of types jpg,xml,wld. The list of goodfiles is returned.
+        A file is bad if it does not have two matching files with the same filename and of types jpg,xml,wld.
+        
+        Args:
+            filesList (array): list of all the files within the source directory
+
+        Returns:
+            array: a list of all the files that had three matching filenames and each file was of type: jpg,xml,wld.
+        """
         # ALL POSSIBLE FILE TYPES
         FILE_TYPES=['jpg','wld','xml']
         # Copy of file types that can be manipulated
         currentFileTypes=FILE_TYPES.copy()
+        skipFlag=0
         # sort files list by filenames
         print("\n Before Sorting",filesList)
         filesList.sort()
         print("\n After Sorting",filesList)
+        badFilesList=[]
+        goodFilesList=[]
+        for index,file in enumerate(filesList):
+            print(index)
+            print(file)
+            fileName,extension = file.split(".",1) # split the file once
 
-        return filesList
+            if(skipFlag == 1 or skipFlag == 2 ):
+                --skipFlag
+                goodFilesList.append(file)
+                continue
+            elif( index+1 >= len(filesList) or index+2 >= len(filesList)):
+                badFilesList.append(file)   #no more files in list after this
+                if(index+1 < len(filesList)):
+                     badFilesList.append(filesList[index+1])  #no more files in list after this
+                break
+            elif(fileName ==  self.getFileName(filesList[index+1]) and fileName ==  self.getFileName(filesList[index+2])):
+                # print("Found a match")
+                extension1=self.getExtension(filesList[index+1])
+                currentFileTypes.remove(extension)
+                if(extension1 in currentFileTypes):
+                    currentFileTypes.remove(extension1)
+                extension2=self.getExtension(filesList[index+2])
+                if(extension2 in currentFileTypes):
+                    # print("MATCHED BY FILE EXTENSION")
+                    skipFlag=2
+                    goodFilesList.append(file)
+                else:
+                    badFilesList.append(file)
+                currentFileTypes=FILE_TYPES.copy() #reset the fileTypes array for the next compatsion
+            else:       #if next two fileNames do not match it means we cannot process them
+                badFilesList.append(file)
+                # print("BAD FILE FOUND")
 
+        print("THE bad")
+        #TODO build a function to popup an errorMessage about the bad files
+        #TODO build a function to create a text file containing bad files
+        print(badFilesList)
+        print("THE GOOD")
+        print(goodFilesList)
+
+        return goodFilesList
 
     def populateFilesList(self, filePath):
          #Update the list box
@@ -379,11 +446,16 @@ class MainApp(tk.Tk):
 
     def open_file_dialog(self, isSourceLocation):
         """"Prompts the user to specify a directory where the files are located. Then saves the absolute path to a label and inserts all
-        the files into the listbox.
-       Prompts the user to specify a directory where the files are located using a system file box. Then saves the absolute path to a label.
-       It then clears the listbox to ensure a clean insert and inserts all the files into the listbox.
+        the files into the listbox if isSourceLocation = true, otherwise it update the pathDestinationPathlabel to contain the path to the directory 
+        where the resulting csv file will be stored. 
+
+       Prompts the user to specify a directory where the files are located using a system file box. Then saves the absolute path to either the source
+       or destination path label. If the path is for the source directory then it calls a function to populate the listbox, if the path is for destination 
+       then it only updates the destination label.
         Args:
              self: An instance of the MainApp class.
+             isSourceLocation: A boolean value that if true true means that filepath is the location of the source files
+                              if false it means filepath is the location of the destination where the csv will be stored
         Returns:
           None.
         Raises:
@@ -397,20 +469,22 @@ class MainApp(tk.Tk):
         else: 
             self.pathDestinationPathlabel.config( text=f"{filePath}")
 
+    def getDestinationPath(self):
+        destinationPath = self.pathDestinationPathlabel.cget("text")
+        if destinationPath == "":
+            return FileManipulators.createDestinationFolder(self.logger)
+        else:
+            return pathlib.Path(destinationPath)
+
     def chooseDestination(self, logger):
-        # Get contents of destination path label
-        destinationPath= self.pathDestinationPathlabel.cget("text")
-        print("\ndestinationPath",destinationPath)
-        print("\ntype(destinationPath)",type(destinationPath))
+        # Check if the destination exists
+        destinationPath=self.getDestinationPath()
         FileManipulators.open_result(logger,destinationPath)
 
-           
-
-      
     def run_code(self):
         """"Creates a csv file from the files in the listbox.
        
-       Runs all the necessary functions to create a csv file. It starts by verifiying the destination files directory exists in the cwd.
+       Runs all the necessary functions to create a csv file. It starts by verifiying the destination files directory exists.
        It then gets the absolute path to the directory containing the files. It gets the list of the file name from the listbox.
        It then reads all the files and creates a csv file. It then checks if the csv file generated is empty and if it is then it deletes
        it.
@@ -420,13 +494,18 @@ class MainApp(tk.Tk):
           None.
         Raises:
            None.
-        """  
+        """
+        destinationPath = self.pathDestinationPathlabel.cget("text")
+        if destinationPath == "":
+            destPath=FileManipulators.createDestinationFolder(self.logger)
+        else:
+            destPath=pathlib.Path(destinationPath)
         FileManipulators.createDestinationFolder(self.logger)
         #Replace with Destination path user chose
         destination_path=FileManipulators.create_destination_file()
         path_npz_str = self.pathSourcePathlabel.cget("text")                      #receieves the path where the files are located.
         path_npz=pathlib.Path(str(path_npz_str))
-        npz_list=self.read_npz_listbox()                                 #gets the list of npz files from the listbox.
+        npz_list=self.readListbox()                                 #gets the list of npz files from the listbox.
         self.read_files(path_npz,npz_list,destination_path)
         FileManipulators.delete_empty_file(destination_path,self.logger)
 

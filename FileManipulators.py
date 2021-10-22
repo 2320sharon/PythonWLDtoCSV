@@ -65,13 +65,8 @@ def check_folder_exists(path_name,foldername):
                 return True
     return False
 
-#TODO modify to check if the user's results folder exists
-#TODO pass the destination name to this function
 def createDestinationFolder(logger):
-    """"Verifies the directory called destination_files exists within the current working directory.
-        
-    Creates a directory called destination_files within the current working directory if one does not currently exist.
-        
+    """" Creates a directory called destination_files within the current working directory if one does not currently exist.
     Args:
         logger: A logger used for debugging.
 
@@ -88,28 +83,16 @@ def createDestinationFolder(logger):
     return pathlib.Path.cwd().joinpath('destination_files')
 
 def open_result(logger,destinationPath):
-    """"Opens the directory called destination_files in a gui interface according the user's PC type.
-        
-    Verifies the directory called destination_files exists within the current working directory.
-        
+    """"Opens the directory specifed by destination path    
     Args:
         logger: A logger used for debugging.
-
     Returns:
         None.
-
     Raises:
         None.
         """
-    # If the destinationPath is blank make the default location in the Program's directory
-    print("\n destinationPath",destinationPath)
-    if destinationPath == "":
-        destPath=createDestinationFolder(logger)
-    else:
-        destPath=pathlib.Path(destinationPath)
-
     if os.name != 'posix':
-        os.startfile(destPath, 'open')
+        os.startfile(destinationPath, 'open')
     else:
-        os.system('xdg-open '+os.getcwd()+os.sep+'destination_files')
+        os.system('xdg-open '+destinationPath)
 
