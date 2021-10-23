@@ -7,6 +7,7 @@ import tkinter as tk
 from WLDtoCSVClass import *
 import FileManipulators
 from tkinter import filedialog, messagebox, ttk
+from FileData import *
 
 class InstructionFrame(tk.Frame):
     def __init__(self,parent):
@@ -433,11 +434,19 @@ class MainApp(tk.Tk):
             self.filesListbox.insert('end',item)
 
     def getSourcePath(self):
+        """getSourcePath returns the path to the source directory specifed by the user
+
+        Raises:
+            EmptySourcePath: raises if the path to source files is invalid
+
+        Returns:
+           [Pathlib.path]: path to source folder where jpg,wld,xml
+        """
         sourcePath = self.pathSourcePathlabel.cget("text")
         if sourcePath == "":
            raise EmptySourcePath
         else:
-            return sourcePath
+            return pathlib.Path(sourcePath)
 
     def open_file_dialog(self, isSourceLocation):
         """"Prompts the user to specify a directory where the files are located. Then saves the absolute path to a label and inserts all
@@ -465,6 +474,10 @@ class MainApp(tk.Tk):
             self.pathDestinationPathlabel.config( text=f"{filePath}")
 
     def getDestinationPath(self):
+        """getDestinationPath returns a path to where the csv will be created depending on user input
+        Returns:
+            [Pathlib.path]: path to destination folder where csv file be stored
+        """
         destinationPath = self.pathDestinationPathlabel.cget("text")
         if destinationPath == "":
             return FileManipulators.createDestinationFolder(self.logger)
@@ -474,6 +487,41 @@ class MainApp(tk.Tk):
     def chooseDestination(self, logger):
         destinationPath=self.getDestinationPath()
         FileManipulators.open_result(logger,destinationPath)
+
+    def processFiles(self,sourcePath,ArrayoffilesList,destinationPath):
+        # make a csv file at destinationpath and return the path to it
+        print("in processfiles ArrayoffilesList: ",ArrayoffilesList)
+        for filesArray in ArrayoffilesList:
+            print("in processfiles filesArray: ",filesArray)
+            fileDataObject=FileData()           #Create an object to hold all the file data
+            for index,file in enumerate(filesArray):
+                print("in processfiles: ",file)
+                if(file.endswith('xml')):
+                    # Join sourcePath with the xml file name
+                    print("XML name",file)
+                    fullXMLPath=sourcePath.joinpath(file)
+                    print(fullXMLPath)
+                    fileDataObject.setXMLPath(fullXMLPath)
+                if(file.endswith('jpg')):
+                     # Join sourcePath with the jpg file name
+                     fileDataObject.setJPGName(file)
+                     print("JPG name",file)
+                     fullJPGPath=sourcePath.joinpath(file)
+                     print(fullJPGPath)
+                     fileDataObject.setJPGPath(fullJPGPath)
+                if(file.endswith('wld')):
+                     # Join sourcePath with the jpg file name
+                     print("WLD name",file)
+                     fullWLDPath=sourcePath.joinpath(file)
+                     print(fullWLDPath)
+                     fileDataObject.setWLDPath(fullWLDPath)
+                if(index == 2):     #this is the last spot in the subarray of matching filenames
+                    print("index: ",index)
+                    data=fileDataObject.createList()
+                    print("DATA",data)
+                    # CALL write to csv with data
+                    #TODO should i catech the exception here?
+
 
     def run_code(self):
         """"Creates a csv file from the files in the listbox.
@@ -500,9 +548,10 @@ class MainApp(tk.Tk):
             self.ErrorMsgBbox( emptySourcePathError.msg)
 
         filesList=self.readListbox()        #valid files from the listbox.
-        ArrayoffilesList=FileManipulators.getListofFiles(filesList)      
-        print(ArrayoffilesList)
-        # self.read_files(sourcePath,filesList,destinationPath)
+        ArrayoffilesList=FileManipulators.getListofFiles(filesList) 
+        print("ArrayoffilesList",ArrayoffilesList)
+
+        self.processFiles(sourcePath,ArrayoffilesList,destinationPath)
         # FileManipulators.delete_empty_file(destinationPath,self.logger)
 
 if __name__ == "__main__":

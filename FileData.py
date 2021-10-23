@@ -142,8 +142,9 @@ class FileData:
             array: returns array containing jpg filename, Easting min (XMin), Easting max (XMax), Northing min (YMin),
             Norhting max (YMax), Coordinate Reference System (e.g. wgs 84 / utm zone 18N).
         """
-        if self.WLDPath != "" or  self.XMLPath !="" or  self.JPGpath !="" or  self.JPGName !="":
-            rows, cols, bands = imread(self.JPGpath).shape
+        if self.WLDPath != "" or  self.XMLPath !="" or  self.JPGPath !="" or  self.JPGName !="":
+            rows, cols, bands = imread("PythonWLDtoCSV\sampleData\LC08_014035_20200604.jpg").shape
+            # rows, cols, bands = imread(self.JPGPath).shape
             wldArray = self.getWLDArray(self.WLDPath)
             xmin, xmax, ymin, ymax = self.getCoords(wldArray,rows,cols)
             print(xmin, xmax, ymin, ymax)
@@ -155,7 +156,7 @@ class FileData:
             raise UltimateException("Missing data from the .wld file")
         elif self.XMLPath == "":
             raise UltimateException("Missing data from the xml file")
-        elif self.JPGpath == "" or self.JPGName !="":
+        elif self.JPGPath == "" or self.JPGName !="":
             raise UltimateException("Missing data from the jpg file")
         else:
             raise UltimateException("ERROR: Something happened while reading the files.")
