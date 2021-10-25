@@ -20,7 +20,7 @@ class InstructionFrame(tk.Frame):
         label_title.grid(row=0,column=2,pady=5)
 
     #TODO: add instructions that all jpg,xml, and .wld must have the same name to make a corresponding entry in the csv file
-        label_instructions = tk.Label(self, text="Instructions:\n1. Select the folder where the .wld, xml, and jpg files are located by using the \"Select Folder\" button.\n2. Click the \"Run\" button to convert the files to csv.\n3. Click \"Open Result\" to see your resulting csv file. ")
+        label_instructions = tk.Label(self, text="Instructions:\n1. Select the folder where the .wld, xml, and jpg files are located by using the \"Select Folder\" button. All the files that are related to each other must have the same file name.\n2. Click the \"Run\" button to convert the files to csv.\n3. Click \"Select Folder to Store Results\" to see your resulting csv file. ")
         label_instructions.config( foreground= "white",background=parent.frame_color)
         label_instructions.grid(row=0,column=2,pady=5)
         
