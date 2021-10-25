@@ -47,7 +47,7 @@ def delete_empty_file(path_name,logger):
         logger.debug("Empty file found. Deleting now.")
         os.remove(path_name)
 
-def check_folder_exists(path_name,foldername):
+def checkFolderExists(path_name,foldername):
     """"Checks if the specified foldername is a directory within the location specified by pathname
         
     Searches the directory specified by path_name and checks if the foldername is a directory.
@@ -67,19 +67,17 @@ def check_folder_exists(path_name,foldername):
         if entry.is_dir() and entry.name == f"{foldername}":
                 return True
     return False
-
+ 
 def createDestinationFolder(logger):
     """" Creates a directory called destination_files within the current working directory if one does not currently exist.
     Args:
         logger: A logger used for debugging.
-
     Returns:
-        None.
-
+        pathlib.Path: containing the location of directory called destination_files within the current working directory 
     Raises:
         None.
         """
-    if not check_folder_exists(pathlib.Path.cwd(),"destination_files"):
+    if not checkFolderExists(pathlib.Path.cwd(),"destination_files"):
         logger.debug("\n The directory destination_files is missing and will be created.")
         os.mkdir("destination_files")
     
@@ -115,8 +113,11 @@ def writeCSV(data,csvfile):
     """write_csv Writes the data in the array data to a valid csv file 
 
     Args:
-        data ([type]): [description]
-        csvfile ([type]): [description]
+        data (array): array containing the jpg name, xmin, xmax, ymin, ymax, and the CRS string 
+        csvfile (pathlib.path): path to the csvfile
+
+    Raises:
+         csv.Error: if there is an error writing to the csv file this is raised
     """
     try:
       with open(csvfile, mode='a',newline='') as sample_csv:
@@ -133,23 +134,16 @@ def getListofFiles(filesList):
         print("fileName ", fileName , "index: ", index, "fullname",file )
         if(skipFlag == 1 or skipFlag == 2 ):
             skipFlag=skipFlag-1  #skip processing the next two files that are known matches
-            print("skipflag during skip",skipFlag)
             continue
         elif( index+1 >= len(filesList) or index+2 >= len(filesList)):
-            print(index)
-            print("skipflag not skip",skipFlag)
-            print("END OF ARRAY")
             break   #No more files left in the array
         elif(fileName == getFileName(filesList[index+1]) and fileName == getFileName(filesList[index+2])):
            skipFlag=2    #Skip the next two files
-           print("Matching file name: ",fileName)
            miniarray=[]
            miniarray.append(file)
            miniarray.append(filesList[index+1])
            miniarray.append(filesList[index+2])
            newFilesArray.append(miniarray)  #append to the main list of files
-           print( newFilesArray)
-           print(miniarray)
         else:       #if next two fileNames do not match it means we cannot process them
             raise exceptions.UltimateException("Error processing files")
         

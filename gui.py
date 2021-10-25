@@ -64,7 +64,7 @@ class MainApp(tk.Tk):
         """
         MsgBox = messagebox.askquestion (title=f"Would you like to add some .npz files?",message=f"You don\'t have any npz files at the location:\n {npz_path}.\n Would you like to add some .npz files?",icon = 'warning')
         if MsgBox == 'yes':
-            self.open_file_dialog()
+            self.OpenFileDialog()
         else:
             messagebox.showerror(title='Exit', message=f"There are no npz files in {npz_path} directory.\nExiting now")
             self.quit()
@@ -128,7 +128,7 @@ class MainApp(tk.Tk):
         self.label_folder_instr.grid(row=0,column=0)
 
         #Button to open a folder
-        self.Open_Folder_button = tk.Button(self.folder_frame, text="Select Folder", command= lambda: self.open_file_dialog(True),background=MainApp.button_purple,fg="white")
+        self.Open_Folder_button = tk.Button(self.folder_frame, text="Select Folder", command= lambda: self.OpenFileDialog(True),background=MainApp.button_purple,fg="white")
         self.Open_Folder_button.grid(row=2,column=0,pady=10,padx=5)
         #-------------------------------------------------------------------
 
@@ -149,7 +149,7 @@ class MainApp(tk.Tk):
 
         #Button to open a folder
         #  self.Open_Folder_button = tk.Button(self.folder_destination_frame, text="Select Folder to Store Results", command= lambda: self.open_file_dialog(self.label_folder_destination_instr),background=MainApp.button_purple,fg="white")
-        self.Open_Folder_button = tk.Button(self.folder_destination_frame, text="Select Folder to Store Results", command= lambda: self.open_file_dialog(False),background=MainApp.button_purple,fg="white")
+        self.Open_Folder_button = tk.Button(self.folder_destination_frame, text="Select Folder to Store Results", command= lambda: self.OpenFileDialog(False),background=MainApp.button_purple,fg="white")
         self.Open_Folder_button.grid(row=2,column=0,pady=10,padx=5)
         #-------------------------------------------------------------------
 
@@ -183,7 +183,7 @@ class MainApp(tk.Tk):
         self.button_result = tk.Button( text="Open CSV",command=lambda:self.chooseDestination(self.logger), background=MainApp.button_purple,fg="white")
         self.button_result.pack(side='bottom',pady=10)
 
-        self.button_run = tk.Button(text="Run", command=self.run_code,background=MainApp.button_purple,fg="white")
+        self.button_run = tk.Button(text="Run", command=self.ConvertCSV,background=MainApp.button_purple,fg="white")
         self.button_run.pack(side='bottom')
 
     def build_main_app(self):
@@ -244,65 +244,6 @@ class MainApp(tk.Tk):
         else:
             self.logger.debug(f"\nUnsuccessful JSON CREATION\nThe file was written to {destination_path}.\n")
 
-    def readFiles(self,source_path,fileList,destination_path):
-        """"Reads all the files in fileList that are in the directory specified by source_path to the directory in destination_path
-       Reads the files in the fileList and appends each filename in fileList with the source_path to create an absolute path to the .npz file.
-       It then extracts all the relevant data from the .npz files and writes it the location specifed by destination_path.
-        Args:
-             self: An instance of the MainApp class.
-             source_path: pathlib.path location of the directory containing .npz files to be processed
-             fileList: A list of files that will be processed
-             destination_path: pathlib.path location of the file that was written to. 
-        Returns:
-           None.
-        Raises:
-            UltimateException: The JSON file could not be created due to an error.
-            NPZCorruptException: The .npz file could not be converted to JSON.
-            IncorrectFileTypeException: A non .npz file was read causing an error
-            IOError: An error occured while accessing the .npz file or json file.
-        """
-        successful_write=False
-        if fileList == []:
-            self.logger.exception("Empty listbox provided")
-            self.EmptySourceMsgBox(source_path)
-        try:
-            with open(destination_path,'a') as outfile:
-                for entry in fileList:
-                    npz_file_path=source_path.joinpath(entry)
-                    print(npz_file_path)
-                    filename,file_extension= os.path.splitext(npz_file_path.name)
-                    print(filename,file_extension)
-                    obj=WLDtoCSVClass(npz_file_path, npz_file_path.name);
-                    try:
-                        obj.check_file()                         #if its a valid npz file then read the file
-                        obj.get_user_ID()
-                        try:
-                            mongo_dict=obj.read_npz()
-                            try:
-                                json_data=obj.create_json(mongo_dict)
-                                outfile.write(json_data)                #write the json data to the json file
-                                outfile.write("\n")                     #put a new line character after each json write
-                                successful_write=True
-                                self.alertWrite(True,destination_path)
-                            except UltimateException as strong_error:
-                                self.logger.exception(strong_error)
-                                self.ErrorMsgBbox("ERROR: Cannot create a JSON file exiting now.")
-                        except CorruptException as err:
-                            self.logger.exception(err)
-                            self.InvalidMsgBox(filename)
-                    except IncorrectFileTypeException as npz_file_error:
-                        self.logger.exception(npz_file_error)
-                        self.InvalidMsgBox(filename)
-        except IOError as file_read_err:
-            self.logger.error(file_read_err)
-            self.ErrorMsgBbox("ERROR cannot read any files from {source_path}}.")
-
-        #At the end check if at least one .npz file was converted to JSON successfully.
-        if successful_write:
-            self.SuccessMsgBox(destination_path)
-        if not successful_write:
-            self.alertWrite(False,destination_path)
-
     def deleteAll_listbox(self):
         """"Deletes all items from the listbox"""
         self.filesListbox.delete(0,'end')
@@ -341,7 +282,6 @@ class MainApp(tk.Tk):
                 self.EmptySourceMsgBox(filesPath)
                 return []
         else:
-            print("path does not exist")
             self.ErrorMsgBbox(msg=f"ERROR\nThe folder {filesPath} does not exist.\n")
             return []
 
@@ -364,16 +304,11 @@ class MainApp(tk.Tk):
         currentFileTypes=FILE_TYPES.copy()
         skipFlag=0
         # sort files list by filenames
-        print("\n Before Sorting",filesList)
         filesList.sort()
-        print("\n After Sorting",filesList)
         badFilesList=[]
         goodFilesList=[]
         for index,file in enumerate(filesList):
-            print(index)
-            print(file)
             fileName,extension = file.split(".",1) # split the file once
-
             if(skipFlag == 1 or skipFlag == 2 ):
                 skipFlag=skipFlag-1  #skip processing the next two files that are known matches
                 goodFilesList.append(file)
@@ -384,14 +319,12 @@ class MainApp(tk.Tk):
                      badFilesList.append(filesList[index+1])  #no more files in list after this
                 break
             elif(fileName ==  FileManipulators.getFileName(filesList[index+1]) and fileName ==  FileManipulators.getFileName(filesList[index+2])):
-                # print("Found a match")
                 extension1=FileManipulators.getExtension(filesList[index+1])
                 currentFileTypes.remove(extension)
                 if(extension1 in currentFileTypes):
                     currentFileTypes.remove(extension1)
                 extension2=FileManipulators.getExtension(filesList[index+2])
                 if(extension2 in currentFileTypes):
-                    # print("MATCHED BY FILE EXTENSION")
                     skipFlag=2
                     goodFilesList.append(file)
                 else:
@@ -399,15 +332,9 @@ class MainApp(tk.Tk):
                 currentFileTypes=FILE_TYPES.copy() #reset the fileTypes array for the next compatsion
             else:       #if next two fileNames do not match it means we cannot process them
                 badFilesList.append(file)
-                # print("BAD FILE FOUND")
 
-        print("THE bad")
         #TODO build a function to popup an errorMessage about the bad files
         #TODO build a function to create a text file containing bad files
-        print(badFilesList)
-        print("THE GOOD")
-        print(goodFilesList)
-
         return goodFilesList
 
     def populateFilesList(self, filePath):
@@ -437,7 +364,7 @@ class MainApp(tk.Tk):
         else:
             return pathlib.Path(sourcePath)
 
-    def open_file_dialog(self, isSourceLocation):
+    def OpenFileDialog(self, isSourceLocation):
         """"Prompts the user to specify a directory where the files are located. Then saves the absolute path to a label and inserts all
         the files into the listbox if isSourceLocation = true, otherwise it update the pathDestinationPathlabel to contain the path to the directory 
         where the resulting csv file will be stored. 
@@ -478,6 +405,13 @@ class MainApp(tk.Tk):
         FileManipulators.openResult(logger,destinationPath)
 
     def processFiles(self,sourcePath,ArrayoffilesList,destinationPath):
+        """processFiles inserts all the valid files from the listbox into the csv file at the location specified by destinationPath
+
+        Args:
+            sourcePath (pathlib.path): path to where source files are located
+            ArrayoffilesList (array of arrays): an array containing arrays which contain files of the same name with each of the file types xml,jpg,wld
+            destinationPath (pathlib.path): path to where the csv file is located
+        """
         # successfulWrite boolean flag to indicate if a write to the csv file has occured
         successfulWrite=False
         for filesArray in ArrayoffilesList:
@@ -485,33 +419,27 @@ class MainApp(tk.Tk):
             for index,file in enumerate(filesArray):
                 if(file.endswith('xml')):
                     # Join sourcePath with the xml file name
-                    print("XML name",file)
                     fullXMLPath=sourcePath.joinpath(file)
-                    print(fullXMLPath)
                     fileDataObject.setXMLPath(fullXMLPath)
                 if(file.endswith('jpg')):
                      fileDataObject.setJPGName(file)
-                     print("JPG name",file)
                      # Join sourcePath with the jpg file name
                      fullJPGPath=sourcePath.joinpath(file)
-                     print(fullJPGPath)
                      fileDataObject.setJPGPath(fullJPGPath)
-                     print( fileDataObject.getJPGPath())
                 if(file.endswith('wld')):
                      # Join sourcePath with the jpg file name
-                     print("WLD name",file)
                      fullWLDPath=sourcePath.joinpath(file)
-                     print(fullWLDPath)
                      fileDataObject.setWLDPath(fullWLDPath)
                 if(index == 2):     #this is the last spot in the subarray of matching filenames
                     try:
                         data=fileDataObject.createList()
                         FileManipulators.writeCSV(data,destinationPath)
+                        successfulWrite=True
                     except ValueError as err :
                         self.InvalidMsgBox(f"Error writing to the file: {destinationPath}")
                     except UltimateException as err:
                         self.InvalidMsgBox(err)
-                    successfulWrite=True
+                   
         
         #At the end check if at least one set of .wld,.jpg,.xml file was converted to CSV successfully.
         if successfulWrite:
@@ -519,7 +447,7 @@ class MainApp(tk.Tk):
         if not successfulWrite:
             self.alertWrite(False,destinationPath)
 
-    def run_code(self):
+    def ConvertCSV(self):
         """"Creates a csv file from the files in the listbox.
        
        Runs all the necessary functions to create a csv file. It starts by verifiying the destination files directory exists.
@@ -534,26 +462,19 @@ class MainApp(tk.Tk):
            None.
         """
         destinationPath=self.getDestinationPath()
-        print("\ndestinationPath", destinationPath)
-
         try:
             sourcePath=self.getSourcePath()
             print(sourcePath)
         except  EmptySourcePath as emptySourcePathError:
             self.logger.exception(emptySourcePathError)
             self.ErrorMsgBbox( emptySourcePathError.msg)
-
-        #TODO Try catch exceptions
         filesList=self.readListbox()        #valid files from the listbox.
-
         ArrayoffilesList=FileManipulators.getListofFiles(filesList) 
-        print("ArrayoffilesList",ArrayoffilesList)
-
         # Create the CSV files in the destination location
         CSVFile=FileManipulators.createDestinationCSVFile(destinationPath)
 
         self.processFiles(sourcePath,ArrayoffilesList,CSVFile)
-        # FileManipulators.delete_empty_file(destinationPath,self.logger)
+        FileManipulators.delete_empty_file(destinationPath,self.logger)
 
 if __name__ == "__main__":
     #Creates a logger and the corresponding logfile.

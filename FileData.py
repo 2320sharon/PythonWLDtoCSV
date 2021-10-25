@@ -104,7 +104,6 @@ class FileData:
             root = tree.getroot()
             dataAxisToSRSAxisMapping=''
             for child in root:
-                print(child.tag, child.attrib,child.text)
                 if child.tag == 'SRS':
                     dataAxisToSRSAxisMapping=child.text
 
@@ -117,13 +116,11 @@ class FileData:
             dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[(PROCJSPosition+1):]
             #add a closing ]
             dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping+"]"
-            print(dataAxisToSRSAxisMapping)
             #GOAL: (["WGS 84 / UTM zone 18N"])
             return  dataAxisToSRSAxisMapping
         except ET.ParseError as err:
             raise UltimateException("XML file is corrupt")
         
-
     def convert_to_list(self,jpg_name,xmin, xmax, ymin, ymax,crs_string):
          """convert_to_list # Returns list containing the following data
          image filename,
@@ -160,18 +157,15 @@ class FileData:
         """
         if self.WLDPath != "" and  self.XMLPath !="" and  self.JPGPath !="" and  self.JPGName !="":
             try:
-                print(f"self.JPGPath: {self.JPGPath}")
                 rows, cols, bands = imread(self.JPGPath).shape
             except FileNotFoundError as fileErr:
                 raise UltimateException("File Not Found")
             wldArray = self.getWLDArray(self.WLDPath)
             try:
                 xmin, xmax, ymin, ymax = self.getCoords(wldArray,rows,cols)
-                print(xmin, xmax, ymin, ymax)
             except IndexError as err:
                 raise UltimateException(err)
             XMLPathCopy=self.XMLPath
-            print(f"XMLPathCopy {XMLPathCopy}")
             CRSstring=self.getXmlString(XMLPathCopy)
             data = self.convert_to_list(self.JPGName,xmin, xmax, ymin, ymax, CRSstring)
             return data
