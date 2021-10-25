@@ -37,7 +37,7 @@ class MainApp(tk.Tk):
     #                                                   DIALOG BOXES
     #-----------------------------------------------------------------------------------------------------------------------
     def ErrorMsgBbox(self,msg):
-        """" A system error dialog box that informs the user an recoverable error has occured and the prorgram will quit. 
+        """" A system error dialog box that informs the user an recoverable error has occured and the program will quit. 
         Args:
             self: An instance of the MainApp class
             msg: A custom msg provided by the program that typically specifies what kind of error occured.
@@ -202,8 +202,8 @@ class MainApp(tk.Tk):
         Raises:
             None.
         """
-        window_width = 910
-        window_height = 480
+        window_width = 1000
+        window_height = 500
         # get the screen dimension
         screen_width =  self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
@@ -486,16 +486,15 @@ class MainApp(tk.Tk):
 
     def chooseDestination(self, logger):
         destinationPath=self.getDestinationPath()
-        FileManipulators.open_result(logger,destinationPath)
+        FileManipulators.openResult(logger,destinationPath)
 
     def processFiles(self,sourcePath,ArrayoffilesList,destinationPath):
-        # make a csv file at destinationpath and return the path to it
-        print("in processfiles ArrayoffilesList: ",ArrayoffilesList)
+        # successfulWrite boolean flag to indicate if a write to the csv file has occured
+        successfulWrite=False
+
         for filesArray in ArrayoffilesList:
-            print("in processfiles filesArray: ",filesArray)
             fileDataObject=FileData()           #Create an object to hold all the file data
             for index,file in enumerate(filesArray):
-                print("in processfiles: ",file)
                 if(file.endswith('xml')):
                     # Join sourcePath with the xml file name
                     print("XML name",file)
@@ -503,9 +502,9 @@ class MainApp(tk.Tk):
                     print(fullXMLPath)
                     fileDataObject.setXMLPath(fullXMLPath)
                 if(file.endswith('jpg')):
-                     # Join sourcePath with the jpg file name
                      fileDataObject.setJPGName(file)
                      print("JPG name",file)
+                     # Join sourcePath with the jpg file name
                      fullJPGPath=sourcePath.joinpath(file)
                      print(fullJPGPath)
                      fileDataObject.setJPGPath(fullJPGPath)
@@ -516,11 +515,21 @@ class MainApp(tk.Tk):
                      print(fullWLDPath)
                      fileDataObject.setWLDPath(fullWLDPath)
                 if(index == 2):     #this is the last spot in the subarray of matching filenames
-                    print("index: ",index)
-                    data=fileDataObject.createList()
-                    print("DATA",data)
-                    # CALL write to csv with data
-                    #TODO should i catech the exception here?
+                    try:
+                        data=fileDataObject.createList()
+                    except UltimateException as err:
+                        self.InvalidMsgBox(UltimateException)
+                    try:
+                        FileManipulators.writeCSV(data,destinationPath)
+                    except ValueError as err :
+                        self.InvalidMsgBox(f"Error writing to the file: {destinationPath}")
+                    successfulWrite=True
+        
+        #At the end check if at least one set of .wld,.jpg,.xml file was converted to CSV successfully.
+        if successfulWrite:
+            self.SuccessMsgBox(destinationPath)
+        if not successfulWrite:
+            self.alertWrite(False,destinationPath)
 
 
     def run_code(self):
@@ -547,11 +556,15 @@ class MainApp(tk.Tk):
             self.logger.exception(emptySourcePathError)
             self.ErrorMsgBbox( emptySourcePathError.msg)
 
+        #TODO Try catch exceptions
         filesList=self.readListbox()        #valid files from the listbox.
         ArrayoffilesList=FileManipulators.getListofFiles(filesList) 
         print("ArrayoffilesList",ArrayoffilesList)
 
-        self.processFiles(sourcePath,ArrayoffilesList,destinationPath)
+        # Create the CSV files in the destination location
+        CSVFile=FileManipulators.createDestinationCSVFile(destinationPath)
+
+        self.processFiles(sourcePath,ArrayoffilesList,CSVFile)
         # FileManipulators.delete_empty_file(destinationPath,self.logger)
 
 if __name__ == "__main__":

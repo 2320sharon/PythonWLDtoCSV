@@ -73,7 +73,7 @@ class FileData:
                 wld_array[i] = float(wld_array[i])        
             return wld_array
 
-    def getXmlString(xml_path):
+    def getXmlString(self,xml_path):
         """read_xml: returns (["WGS 84 / UTM zone 18N"]) extracted from dataAxisToSRSAxisMapping in the XML
 
         [extended_summary]
@@ -148,8 +148,9 @@ class FileData:
             wldArray = self.getWLDArray(self.WLDPath)
             xmin, xmax, ymin, ymax = self.getCoords(wldArray,rows,cols)
             print(xmin, xmax, ymin, ymax)
-
-            CRSstring=self.getXmlString(self.XMLPath)
+            XMLPathCopy=self.XMLPath
+            print(f"XMLPathCopy {XMLPathCopy}")
+            CRSstring=self.getXmlString(XMLPathCopy)
             data = self.convert_to_list(self.JPGName,xmin, xmax, ymin, ymax, CRSstring)
             return data
         elif self.WLDPath == "":

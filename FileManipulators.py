@@ -3,8 +3,11 @@ import os
 import pathlib
 import FileData 
 import exceptions
+import csv
+from csv import writer
 
-def create_destination_file():
+# TODO updates the docstring
+def createDestinationCSVFile(destinationPath):
     """"Creates a csv file in the in a folder called destination_files
         
     Creates a csv file in the current working directory in a folder called \"destination_files\".
@@ -22,8 +25,7 @@ def create_destination_file():
         """
     timestampStr = datetime.now().strftime("%d-%b-%Y_%H_%M_%S")
     dest_file="CSVData"+timestampStr+".csv"
-    result_path = pathlib.Path.cwd().joinpath('destination_files')
-    destination_path=result_path.joinpath(dest_file)
+    destination_path=destinationPath.joinpath(dest_file)
     return destination_path
 
 def delete_empty_file(path_name,logger):
@@ -95,7 +97,7 @@ def getFileName(file):
      fileName,extension = file.split(".",1) # split the file once
      return fileName
 
-def open_result(logger,destinationPath):
+def openResult(logger,destinationPath):
     """"Opens the directory specifed by destination path    
     Args:
         logger: A logger used for debugging.
@@ -108,6 +110,20 @@ def open_result(logger,destinationPath):
         os.startfile(destinationPath, 'open')
     else:
         os.system('xdg-open '+destinationPath)
+
+def writeCSV(data,csvfile):
+    """write_csv Writes the data in the array data to a valid csv file 
+
+    Args:
+        data ([type]): [description]
+        csvfile ([type]): [description]
+    """
+    try:
+      with open(csvfile, mode='a',newline='') as sample_csv:
+         csv_writer = csv.writer(sample_csv, delimiter=',', quotechar='\'', quoting=csv.QUOTE_MINIMAL)
+         csv_writer.writerow(data)
+    except csv.Error as error:
+            raise ValueError(error)
 
 def getListofFiles(filesList):
     newFilesArray=[]
