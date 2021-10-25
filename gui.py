@@ -162,9 +162,9 @@ class MainApp(tk.Tk):
         self.xlist_scroll_bar=tk.Scrollbar(self.list_frame, orient='horizontal')
         self.ylist_scroll_bar=tk.Scrollbar(self.list_frame, orient='vertical')
 
-        #Create the buttons within the same frame holding the listbox
-        delete_button=tk.Button(self.list_holder,text="Delete File",command=self.delete_item_list,background=MainApp.button_purple,fg="white")
-        delete_button.grid(column=0,row = 0,pady=5,padx=10)
+        # #Create the buttons within the same frame holding the listbox
+        # delete_button=tk.Button(self.list_holder,text="Delete File",command=self.delete_item_list,background=MainApp.button_purple,fg="white")
+        # delete_button.grid(column=0,row = 0,pady=5,padx=10)
 
         delete_all_button=tk.Button(self.list_holder,text="Clear All",command=self.deleteAll_listbox,background=MainApp.button_purple,fg="white")
         delete_all_button.grid(column=0,row = 2,pady=5,padx=10)
@@ -344,11 +344,8 @@ class MainApp(tk.Tk):
             files_list=os.listdir(filesPath)
             if files_list != []:                    #Ensure it is not an empty directory
                 validFilesList = [file for file in files_list if self.checkValidFileType(file) and os.path.isfile(os.path.join(filesPath, file))]
-                print(validFilesList)
-                #TODO: parse this list into tuples
                 return validFilesList 
             else:
-                print("empty list")
                 self.EmptySourceMsgBox(filesPath)
                 return []
         else:
@@ -491,7 +488,6 @@ class MainApp(tk.Tk):
     def processFiles(self,sourcePath,ArrayoffilesList,destinationPath):
         # successfulWrite boolean flag to indicate if a write to the csv file has occured
         successfulWrite=False
-
         for filesArray in ArrayoffilesList:
             fileDataObject=FileData()           #Create an object to hold all the file data
             for index,file in enumerate(filesArray):
@@ -531,7 +527,6 @@ class MainApp(tk.Tk):
         if not successfulWrite:
             self.alertWrite(False,destinationPath)
 
-
     def run_code(self):
         """"Creates a csv file from the files in the listbox.
        
@@ -558,6 +553,7 @@ class MainApp(tk.Tk):
 
         #TODO Try catch exceptions
         filesList=self.readListbox()        #valid files from the listbox.
+
         ArrayoffilesList=FileManipulators.getListofFiles(filesList) 
         print("ArrayoffilesList",ArrayoffilesList)
 
