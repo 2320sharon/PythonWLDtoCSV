@@ -162,10 +162,6 @@ class MainApp(tk.Tk):
         self.xlist_scroll_bar=tk.Scrollbar(self.list_frame, orient='horizontal')
         self.ylist_scroll_bar=tk.Scrollbar(self.list_frame, orient='vertical')
 
-        # #Create the buttons within the same frame holding the listbox
-        # delete_button=tk.Button(self.list_holder,text="Delete File",command=self.delete_item_list,background=MainApp.button_purple,fg="white")
-        # delete_button.grid(column=0,row = 0,pady=5,padx=10)
-
         delete_all_button=tk.Button(self.list_holder,text="Clear All",command=self.deleteAll_listbox,background=MainApp.button_purple,fg="white")
         delete_all_button.grid(column=0,row = 2,pady=5,padx=10)
 
@@ -306,10 +302,6 @@ class MainApp(tk.Tk):
             self.SuccessMsgBox(destination_path)
         if not successful_write:
             self.alertWrite(False,destination_path)
-
-    def delete_item_list(self):
-        """"Deletes the selected item from the listbox"""
-        self.filesListbox.delete('anchor')
 
     def deleteAll_listbox(self):
         """"Deletes all items from the listbox"""
@@ -504,6 +496,7 @@ class MainApp(tk.Tk):
                      fullJPGPath=sourcePath.joinpath(file)
                      print(fullJPGPath)
                      fileDataObject.setJPGPath(fullJPGPath)
+                     print( fileDataObject.getJPGPath())
                 if(file.endswith('wld')):
                      # Join sourcePath with the jpg file name
                      print("WLD name",file)
@@ -513,12 +506,11 @@ class MainApp(tk.Tk):
                 if(index == 2):     #this is the last spot in the subarray of matching filenames
                     try:
                         data=fileDataObject.createList()
-                    except UltimateException as err:
-                        self.InvalidMsgBox(UltimateException)
-                    try:
                         FileManipulators.writeCSV(data,destinationPath)
                     except ValueError as err :
                         self.InvalidMsgBox(f"Error writing to the file: {destinationPath}")
+                    except UltimateException as err:
+                        self.InvalidMsgBox(err)
                     successfulWrite=True
         
         #At the end check if at least one set of .wld,.jpg,.xml file was converted to CSV successfully.

@@ -16,8 +16,14 @@ class FileData:
     def setJPGName(self, JPGName):
         self.JPGName=JPGName
 
-    def setJPGPath(self, JPGpath):
-        self.JPGpath=JPGpath
+    def getJPGName(self):
+        return self.JPGName
+
+    def getJPGPath(self):
+        return self.JPGPath
+
+    def setJPGPath(self, JPGPath):
+        self.JPGPath=str(JPGPath)
 
     def setXMLPath(self, XMLPath):
         self.XMLPath=XMLPath
@@ -30,15 +36,21 @@ class FileData:
             rows (int): number of rows in jpg
             cols (int):  number of columns in jpg
 
+        Raises:
+            IndexError: Raises if wld file is incorrectly formatted
+
         Returns:
              xMin, xMax, yMin, yMax
         """
         # Get all the variables out of the array
-        WorldY=wld_array.pop();
-        WorldX=wld_array.pop();
-        YCellSize=wld_array.pop();
-        XCellSize=wld_array.pop();
-        del wld_array
+        try:
+            WorldY=wld_array.pop();
+            WorldX=wld_array.pop();
+            YCellSize=wld_array.pop();
+            XCellSize=wld_array.pop();
+            del wld_array
+        except IndexError as err:
+            raise IndexError(f"Error invalid WLD file: {self.WLDPath}")
 
         xMin = WorldX - (XCellSize / 2)
         yMax = WorldY - (YCellSize / 2)
@@ -87,26 +99,30 @@ class FileData:
         Returns:
             string: (["WGS 84 / UTM zone 18N"]) extracted from dataAxisToSRSAxisMapping in the XML
         """
-        tree = ET.parse(xml_path)
-        root = tree.getroot()
-        dataAxisToSRSAxisMapping=''
-        for child in root:
-            print(child.tag, child.attrib,child.text)
-            if child.tag == 'SRS':
-                dataAxisToSRSAxisMapping=child.text
+        try:
+            tree = ET.parse(xml_path)
+            root = tree.getroot()
+            dataAxisToSRSAxisMapping=''
+            for child in root:
+                print(child.tag, child.attrib,child.text)
+                if child.tag == 'SRS':
+                    dataAxisToSRSAxisMapping=child.text
 
-        # Get this string PROJCS["WGS 84 / UTM zone 18N"
-        commaPosition= dataAxisToSRSAxisMapping.find(',');
-        #Slice string from PROJCS to first , not inclusive
-        dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[0:commaPosition]
-        PROCJSPosition= dataAxisToSRSAxisMapping.find('S');
-        #Remove PROJCS
-        dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[(PROCJSPosition+1):]
-        #add a closing ]
-        dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping+"]"
-        print(dataAxisToSRSAxisMapping)
-        #GOAL: (["WGS 84 / UTM zone 18N"])
-        return  dataAxisToSRSAxisMapping
+            # Get this string PROJCS["WGS 84 / UTM zone 18N"
+            commaPosition= dataAxisToSRSAxisMapping.find(',');
+            #Slice string from PROJCS to first , not inclusive
+            dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[0:commaPosition]
+            PROCJSPosition= dataAxisToSRSAxisMapping.find('S');
+            #Remove PROJCS
+            dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping[(PROCJSPosition+1):]
+            #add a closing ]
+            dataAxisToSRSAxisMapping= dataAxisToSRSAxisMapping+"]"
+            print(dataAxisToSRSAxisMapping)
+            #GOAL: (["WGS 84 / UTM zone 18N"])
+            return  dataAxisToSRSAxisMapping
+        except ET.ParseError as err:
+            raise UltimateException("XML file is corrupt")
+        
 
     def convert_to_list(self,jpg_name,xmin, xmax, ymin, ymax,crs_string):
          """convert_to_list # Returns list containing the following data
@@ -135,19 +151,25 @@ class FileData:
         Raises:
             UltimateException:  Raises if WLDPath does not exist
             UltimateException: Raises if XMLPath does not exist
-            UltimateException: Raises if JPGpath or does not exist
+            UltimateException: Raises if JPGPath or does not exist
             UltimateException: Raises if some other error occurs
 
         Returns:
             array: returns array containing jpg filename, Easting min (XMin), Easting max (XMax), Northing min (YMin),
             Norhting max (YMax), Coordinate Reference System (e.g. wgs 84 / utm zone 18N).
         """
-        if self.WLDPath != "" or  self.XMLPath !="" or  self.JPGPath !="" or  self.JPGName !="":
-            rows, cols, bands = imread("PythonWLDtoCSV\sampleData\LC08_014035_20200604.jpg").shape
-            # rows, cols, bands = imread(self.JPGPath).shape
+        if self.WLDPath != "" and  self.XMLPath !="" and  self.JPGPath !="" and  self.JPGName !="":
+            try:
+                print(f"self.JPGPath: {self.JPGPath}")
+                rows, cols, bands = imread(self.JPGPath).shape
+            except FileNotFoundError as fileErr:
+                raise UltimateException("File Not Found")
             wldArray = self.getWLDArray(self.WLDPath)
-            xmin, xmax, ymin, ymax = self.getCoords(wldArray,rows,cols)
-            print(xmin, xmax, ymin, ymax)
+            try:
+                xmin, xmax, ymin, ymax = self.getCoords(wldArray,rows,cols)
+                print(xmin, xmax, ymin, ymax)
+            except IndexError as err:
+                raise UltimateException(err)
             XMLPathCopy=self.XMLPath
             print(f"XMLPathCopy {XMLPathCopy}")
             CRSstring=self.getXmlString(XMLPathCopy)
