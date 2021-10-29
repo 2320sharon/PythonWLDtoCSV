@@ -107,7 +107,8 @@ def openResult(logger,destinationPath):
     if os.name != 'posix':
         os.startfile(destinationPath, 'open')
     else:
-        os.system('xdg-open '+destinationPath)
+        destinationPath='xdg-open '+str(destinationPath)
+        os.system( destinationPath)
 
 def writeCSV(data,csvfile):
     """write_csv Writes the data in the array data to a valid csv file 
