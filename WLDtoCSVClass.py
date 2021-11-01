@@ -1,8 +1,6 @@
 import os as os
-import numpy as np
 from numpy.lib.npyio import load
 import json
-import pathlib
 from exceptions import *
 import logging
 from datetime import datetime
