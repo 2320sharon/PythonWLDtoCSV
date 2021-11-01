@@ -368,7 +368,7 @@ class MainApp(tk.Tk):
         if sourcePath == "":
            raise EmptySourcePath
         else:
-            return pathlib.Path(sourcePath)
+            return Path(sourcePath)
 
     def OpenFileDialog(self, isSourceLocation):
         """"Prompts the user to specify a directory where the files are located. Then saves the absolute path to a label and inserts all
@@ -404,7 +404,7 @@ class MainApp(tk.Tk):
         if destinationPath == "":
             return FileManipulators.createDestinationFolder(self.logger)
         else:
-            return pathlib.Path(destinationPath)
+            return Path(destinationPath)
 
     def chooseDestination(self, logger):
         destinationPath=self.getDestinationPath()
@@ -480,7 +480,7 @@ class MainApp(tk.Tk):
         CSVFile=FileManipulators.createDestinationCSVFile(destinationPath)
 
         self.processFiles(sourcePath,ArrayoffilesList,CSVFile)
-        FileManipulators.delete_empty_file(destinationPath,self.logger)
+        FileManipulators.delete_empty_file(CSVFile,self.logger)
 
 if __name__ == "__main__":
     #Creates a logger and the corresponding logfile.
