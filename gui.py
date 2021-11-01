@@ -19,8 +19,7 @@ class InstructionFrame(tk.Frame):
         label_title.config( foreground= "white",background=parent.frame_color)
         label_title.grid(row=0,column=2,pady=5)
 
-    #TODO: add instructions that all jpg,xml, and .wld must have the same name to make a corresponding entry in the csv file
-        label_instructions = tk.Label(self, text="Instructions:\n1. Select the folder where the .wld, xml, and jpg files are located by using the \"Select Folder\" button. All the files that are related to each other must have the same file name.\n2. Click the \"Run\" button to convert the files to csv.\n3. Click \"Select Folder to Store Results\" to see your resulting csv file. ")
+        label_instructions = tk.Label(self, text="Instructions:\n1. Select the folder where the .wld, xml, and jpg files are located by using the \"Select Folder\" button.\n All the files that are related to each other must have the same file name.\n2. Click the \"Run\" button to convert the files to csv.\n3. Click \"Select Folder to Store Results\" to see your resulting csv file. ")
         label_instructions.config( foreground= "white",background=parent.frame_color)
         label_instructions.grid(row=0,column=2,pady=5)
         
@@ -114,11 +113,11 @@ class MainApp(tk.Tk):
 
         #Frame to hold the "Select Folder" button and the corresponding labels
         #-----------------------------------------------------------------
-        self.folder_frame=tk.Frame(self.Left_Frame,height = 75,width = 180,pady=10,padx=10,background=MainApp.frame_color)
-        self.folder_frame.pack(side='top',padx=10,pady=10)
+        self.folder_frame=tk.Frame(self.Left_Frame,height = 75,width = 120,pady=10,padx=10,background=MainApp.frame_color)
+        self.folder_frame.pack(side='top',padx=5,pady=5)
 
         #pathSourcePathlabel labels the path containing the source directory exists. Empty by default
-        self.pathSourcePathlabel=tk.Label(self.folder_frame, text="")
+        self.pathSourcePathlabel=tk.Label(self.folder_frame, text="",wraplength=220, justify="center")
         self.pathSourcePathlabel.config( foreground= "white",background=MainApp.frame_color)
         self.pathSourcePathlabel.grid(row=1,column=0)
 
@@ -134,11 +133,11 @@ class MainApp(tk.Tk):
 
         #Frame to hold the "Select Folder to hold Results" button and the corresponding labels
         #-----------------------------------------------------------------
-        self.folder_destination_frame=tk.Frame(self.Left_Frame,height = 50,width = 100,pady=10,padx=10,background=MainApp.frame_color)
-        self.folder_destination_frame.pack(side='bottom',padx=10,pady=10)
+        self.folder_destination_frame=tk.Frame(self.Left_Frame,height = 50,width = 100,pady=5,padx=5,background=MainApp.frame_color)
+        self.folder_destination_frame.pack(side='bottom',padx=5,pady=5)
 
         #pathDestinationPathlabel labels the path containing the destination directory exists. Empty by default
-        self.pathDestinationPathlabel=tk.Label(self.folder_destination_frame, text="")
+        self.pathDestinationPathlabel=tk.Label(self.folder_destination_frame, text="",wraplength=220, justify="center")
         self.pathDestinationPathlabel.config( foreground= "white",background=MainApp.frame_color)
         self.pathDestinationPathlabel.grid(row=1,column=0)
 
@@ -150,15 +149,17 @@ class MainApp(tk.Tk):
         #Button to open a folder
         #  self.Open_Folder_button = tk.Button(self.folder_destination_frame, text="Select Folder to Store Results", command= lambda: self.open_file_dialog(self.label_folder_destination_instr),background=MainApp.button_purple,fg="white")
         self.Open_Folder_button = tk.Button(self.folder_destination_frame, text="Select Folder to Store Results", command= lambda: self.OpenFileDialog(False),background=MainApp.button_purple,fg="white")
-        self.Open_Folder_button.grid(row=2,column=0,pady=10,padx=5)
+        self.Open_Folder_button.grid(row=2,column=0,pady=5,padx=5)
         #-------------------------------------------------------------------
 
+        # Frames to hold listbox and associated components
+        # ---------------------------------------------------------
         #Create frame to hold scrolling list and buttons to change list
-        self.list_holder=tk.Frame(self,width=190,height = 210,background=MainApp.frame_color,padx=7,pady=7)
+        self.list_holder=tk.Frame(self,width=150,height = 210,background=MainApp.frame_color,padx=7,pady=7)
         self.list_holder.pack(side='right',pady=10,padx=5)
 
         #Create a frame to hold the list
-        self.list_frame=tk.Frame(self.list_holder,height = 600,width = 300,pady=10)
+        self.list_frame=tk.Frame(self.list_holder,height = 500,width = 250,pady=10)
         self.xlist_scroll_bar=tk.Scrollbar(self.list_frame, orient='horizontal')
         self.ylist_scroll_bar=tk.Scrollbar(self.list_frame, orient='vertical')
 
@@ -179,12 +180,17 @@ class MainApp(tk.Tk):
         self.filesListbox.pack(side='left')
         #4.Place the vertical scrollbar after the horizontal one
         self.ylist_scroll_bar.pack(side='right',fill='y')
+        # -----------------------------------------------------------------------------------------------------------------
 
-        self.button_result = tk.Button( text="Open CSV",command=lambda:self.chooseDestination(self.logger), background=MainApp.button_purple,fg="white")
+        #Create a frame to hold all the buttons related to opening and creating the results
+        self.ResultButtonsFrame=tk.Frame(self,width=150,height = 150,background=MainApp.frame_color,padx=7,pady=7)
+        self.ResultButtonsFrame.pack(side='bottom',pady=10,padx=5)
+
+        self.button_run = tk.Button(self.ResultButtonsFrame,text="Run", command=self.ConvertCSV,background=MainApp.button_purple,fg="white")
+        self.button_run.pack(side='top')
+
+        self.button_result = tk.Button(self.ResultButtonsFrame, text="Open CSV",command=lambda:self.chooseDestination(self.logger), background=MainApp.button_purple,fg="white")
         self.button_result.pack(side='bottom',pady=10)
-
-        self.button_run = tk.Button(text="Run", command=self.ConvertCSV,background=MainApp.button_purple,fg="white")
-        self.button_run.pack(side='bottom')
 
     def build_main_app(self):
         """"Builds the main frame of the app.
@@ -198,8 +204,8 @@ class MainApp(tk.Tk):
         Raises:
             None.
         """
-        window_width = 1000
-        window_height = 500
+        window_width = 830
+        window_height = 420
         # get the screen dimension
         screen_width =  self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
