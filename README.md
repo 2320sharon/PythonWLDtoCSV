@@ -1,5 +1,7 @@
 # PythonWLDtoCSV
 
+![](readmeImages/base.jpg)
+
 ## Description
 The WLDtoCSVConverter is a program meant to take specific data from .xml, .jpg, .wld files and places each set of data into a corresponding row in the generated csv file.
 The files to be processed must be in the same directory and the .xml, .jpg, .wld files that are intended to be used together must all have the same name.
@@ -14,9 +16,6 @@ Each row of the CSV file will contain the following information about each set o
   4. Northing min (YMin),
   5. Norhting max (YMax),
   6. Coordinate Reference System (e.g. wgs 84 / utm zone 18N).
-
-
-![](readmeImages/base.jpg)
 
 # WLDtoCSVConverter Instructions
 1. Click "Select Folder" and this will open a system file dialog where you will select the directory containing all your .xml, .jpg, and .wld files
