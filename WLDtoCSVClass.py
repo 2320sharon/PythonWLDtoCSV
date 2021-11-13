@@ -1,8 +1,6 @@
 import os as os
 from numpy.lib.npyio import load
-import json
 from exceptions import *
-import logging
 from datetime import datetime
 from pathlib import Path     #necessary for reading the npz files and writing the final json file
 import os
@@ -10,54 +8,6 @@ import pandas as pd
 import csv
 from skimage.io import imread
 import xml.etree.ElementTree as ET
-
-#                                               LOG CREATION FUNCTIONS
-#-----------------------------------------------------------------------------------------------------------------------
-def make_log_file_path():
-    """"Creates the absoltute path where the log file will be generated
-          
-        Uses the current date and time to generate a unique log file.
-
-    Args:
-        None.
-    Returns:
-        A pathlib.Path containing the absolute path to the directory called log_files
-        For example:
-            For a windows machine:
-                C:\programs\npz_to_json_converter\log_files\log_03-Sep-2021_07_47_40.log
-    Raises:
-        None.
-        """
-    timestampStr = datetime.now().strftime("%d-%b-%Y_%H_%M_%S")
-    file_name="log_"+timestampStr+".log"
-    dir_path = Path.cwd().joinpath('log_files')
-    print(f"\nLog files location: {dir_path}")
-    if not os.path.exists(dir_path):
-        print(f"\nLocation does not exist: {dir_path}.\n Creating it now. \n")
-        os.mkdir(dir_path)
-    log_path=dir_path.joinpath(file_name)
-    print(f"\nLog: {log_path} has been created. \n")
-    return log_path
-
-def create_filehandler_logger(file_log_name):
-    """"Creates the file handler for the logger using the filename
-          
-    Args:
-        None.
-    Returns:
-        None.
-    Raises:
-        None.
-        """
-    file_handler = logging.FileHandler(file_log_name)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-#Creating the logger here
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
-#-----------------------------------------------------------------------------------------------------------------------
 
 class WLDtoCSVClass:
     """A class to hold all data associated with the jpg wld, and xml files and contains methods to convert from npz to json.
@@ -77,7 +27,7 @@ class WLDtoCSVClass:
         """
         filename,file_extension= os.path.splitext(self.file_name)
         if file_extension != fileType:                                                            #if npz file does not exist throw an exception
-            logger.error(f"ERROR \n Invalid file type {file_extension} is not allowed! \n File: {self.file_path} is not a valid {fileType} file. \n End of ERROR")
+            print(f"ERROR \n Invalid file type {file_extension} is not allowed! \n File: {self.file_path} is not a valid {fileType} file. \n End of ERROR")
             raise IncorrectFileTypeException(filename=self.file_name)
 
     def createDataTuple(self,filepath):

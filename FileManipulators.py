@@ -6,14 +6,36 @@ import exceptions
 import csv
 from csv import writer
 
-# TODO updates the docstring
+def create_badFile_file():
+    """create_badFile_file 
+
+    Args:
+        destinationPath (path):path to where results will be stored
+
+    Returns:
+        path: returns path to the newly generated bad file .txt
+    """
+    timestampStr = datetime.now().strftime("%d-%b-%Y_%H_%M_%S")
+    dest_file="BadFiles_"+timestampStr+".txt"
+    # if not os.path.exists(pathlib.Path.cwd().joinpath('bad_files')):
+    # Check whether the specified path exists or not
+    path=pathlib.Path.cwd().joinpath('bad_files')
+    if not os.path.exists(path):
+        # Create a new directory because it does not exist 
+        os.makedirs(path)
+        print("The new directory is created!")
+
+    result_path = path
+    destination_path=result_path.joinpath(dest_file)
+    return destination_path
+
 def createDestinationCSVFile(destinationPath):
     """"Creates a csv file in the in a folder called destination_files
         
     Creates a csv file in the current working directory in a folder called \"destination_files\".
         
     Args:
-        None.
+        destinationPath: path to the folder where the results are stored
 
     Returns:
         A pathlib.Path containing the exact location of the .csv file within the folder called destination_files
@@ -28,14 +50,13 @@ def createDestinationCSVFile(destinationPath):
     destination_path=destinationPath.joinpath(dest_file)
     return destination_path
 
-def delete_empty_file(path_name,logger):
+def delete_empty_file(path_name,):
     """"Deletes any empty json files generated.
         
     Checks for empty csv files in the specified path_name of size 0 (AKA empty). If it finds one it deletes it.
         
     Args:
         path_name: A pathlib.Path containing the path to folder containing empty json files.
-        logger:    A logger used for debugging.
 
     Returns:
         None.
@@ -44,7 +65,6 @@ def delete_empty_file(path_name,logger):
         None.
         """
     if os.path.exists(path_name) and os.stat(path_name).st_size == 0:
-        logger.debug("Empty file found. Deleting now.")
         os.remove(path_name)
 
 def checkFolderExists(path_name,foldername):
@@ -68,37 +88,34 @@ def checkFolderExists(path_name,foldername):
                 return True
     return False
  
-def createDestinationFolder(logger):
+def createDestinationFolder():
     """" Creates a directory called destination_files within the current working directory if one does not currently exist.
-    Args:
-        logger: A logger used for debugging.
     Returns:
         pathlib.Path: containing the location of directory called destination_files within the current working directory 
     Raises:
         None.
         """
     if not checkFolderExists(pathlib.Path.cwd(),"destination_files"):
-        logger.debug("\n The directory destination_files is missing and will be created.")
         os.mkdir("destination_files")
     
     return pathlib.Path.cwd().joinpath('destination_files')
 
 def getExtension(file):
     # returns only the extension of the file and check for xml extensions
-     fileName,extension = file.split(".",1) # split the file once
-     if extension.endswith(".xml"):
+     fileName,extension = os.path.splitext(f"{file}")
+     if extension == ".xml":
         extension="xml"
      return extension
 
 def getFileName(file):
     # returns only the filename
-     fileName,extension = file.split(".",1) # split the file once
+     fileName,extension = os.path.splitext(f"{file}")
      return fileName
 
-def openResult(logger,destinationPath):
+def openResult(destinationPath):
     """"Opens the directory specifed by destination path    
     Args:
-        logger: A logger used for debugging.
+
     Returns:
         None.
     Raises:
@@ -138,7 +155,10 @@ def getListofFiles(filesList):
             continue
         elif( index+1 >= len(filesList) or index+2 >= len(filesList)):
             break   #No more files left in the array
-        elif(fileName == getFileName(filesList[index+1]) and fileName == getFileName(filesList[index+2])):
+        # (fileName.find(getFileName(filesList[index+1])) or getFileName(filesList[index+1]).find(fileName)) and (fileName.find(getFileName(filesList[index+2])) or getFileName(filesList[index+2]).find(fileName))
+        # elif(fileName == getFileName(filesList[index+1]) and fileName == getFileName(filesList[index+2])):
+        # elif((fileName.find(getFileName(filesList[index+1])) or getFileName(filesList[index+1]).find(fileName)) and (fileName.find(getFileName(filesList[index+2])) or getFileName(filesList[index+2]).find(fileName))):
+        elif(fileName.replace(".jpg.aux","") == getFileName(filesList[index+1]).replace(".jpg.aux","") and fileName.replace(".jpg.aux","") == getFileName(filesList[index+2]).replace(".jpg.aux","")):   
            skipFlag=2    #Skip the next two files
            miniarray=[]
            miniarray.append(file)

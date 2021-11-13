@@ -35,6 +35,18 @@ class MainApp(tk.Tk):
 
     #                                                   DIALOG BOXES
     #-----------------------------------------------------------------------------------------------------------------------
+    def ErrorBox(self,msg):
+        """" A system error dialog box that informs the user an recoverable error has occured and the program will quit. 
+        Args:
+            self: An instance of the MainApp class
+            msg: A custom msg provided by the program that typically specifies what kind of error occured.
+        Returns:
+            None
+        Raises:
+            None
+        """
+        messagebox.showerror(title='ERROR', message=f"{msg}")
+    
     def ErrorMsgBbox(self,msg):
         """" A system error dialog box that informs the user an recoverable error has occured and the program will quit. 
         Args:
@@ -96,13 +108,10 @@ class MainApp(tk.Tk):
     #                                                   End of DIALOG BOXES
     #-----------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, logger):
+    def __init__(self):
         tk.Tk.__init__(self,className=" .WLD to CSV converter")
-        self.logger=logger
-        self.logger.info("\nSuccessfully created base app\n")
         #make sure the destination folder exists to store the resulting JSON file
         self.wait_visibility()
-        # FileManipulators.verify_destination_exists(self.logger)
         #create the main app's gui
         self.build_main_app()
         #make the subframes within the main app
@@ -189,7 +198,7 @@ class MainApp(tk.Tk):
         self.button_run = tk.Button(self.ResultButtonsFrame,text="Run", command=self.ConvertCSV,background=MainApp.button_purple,fg="white")
         self.button_run.pack(side='top')
 
-        self.button_result = tk.Button(self.ResultButtonsFrame, text="Open CSV",command=lambda:self.chooseDestination(self.logger), background=MainApp.button_purple,fg="white")
+        self.button_result = tk.Button(self.ResultButtonsFrame, text="Open CSV",command=lambda:self.chooseDestination(), background=MainApp.button_purple,fg="white")
         self.button_result.pack(side='bottom',pady=10)
 
     def build_main_app(self):
@@ -230,25 +239,6 @@ class MainApp(tk.Tk):
         """
         self.instructionframe=InstructionFrame(self)
         self.instructionframe.pack(side='top')
-
-    def alertWrite(self,write_status,destination_path):
-        """"Writes a message to the log file depending on whether a successful write to the json file occured or not.
-       If write status is true it writes success message to the log file if at least one .npz file was written to the JSON file
-       specified by the destination_path.
-       If write status is false it means the .npz file was not written to the JSON file specified by the destination_path.
-        Args:
-             self: An instance of the MainApp class.
-             write_status: Boolean. True=Successful Write   False=Failed Write
-             destination_path: pathlib.path location of the file that was written to. 
-        Returns:
-           None.
-        Raises:
-            None.
-        """
-        if write_status:
-            self.logger.debug(f"\nSuccessful JSON CREATION\n The file was written to {destination_path}.\n")
-        else:
-            self.logger.debug(f"\nUnsuccessful JSON CREATION\nThe file was written to {destination_path}.\n")
 
     def deleteAll_listbox(self):
         """"Deletes all items from the listbox"""
@@ -305,7 +295,7 @@ class MainApp(tk.Tk):
             array: a list of all the files that had three matching filenames and each file was of type: jpg,xml,wld.
         """
         # ALL POSSIBLE FILE TYPES
-        FILE_TYPES=['jpg','wld','xml']
+        FILE_TYPES=['.jpg','.wld','.xml']
         # Copy of file types that can be manipulated
         currentFileTypes=FILE_TYPES.copy()
         skipFlag=0
@@ -314,7 +304,8 @@ class MainApp(tk.Tk):
         badFilesList=[]
         goodFilesList=[]
         for index,file in enumerate(filesList):
-            fileName,extension = file.split(".",1) # split the file once
+
+            fileName,extension = os.path.splitext(f"{file}")
             if(skipFlag == 1 or skipFlag == 2 ):
                 skipFlag=skipFlag-1  #skip processing the next two files that are known matches
                 goodFilesList.append(file)
@@ -324,7 +315,8 @@ class MainApp(tk.Tk):
                 if(index+1 < len(filesList)):
                      badFilesList.append(filesList[index+1])  #no more files in list after this
                 break
-            elif(fileName ==  FileManipulators.getFileName(filesList[index+1]) and fileName ==  FileManipulators.getFileName(filesList[index+2])):
+            # elif((fileName.find(FileManipulators.getFileName(filesList[index+1])) or FileManipulators.getFileName(filesList[index+1]).find(fileName)) and (fileName.find(FileManipulators.getFileName(filesList[index+2])) or FileManipulators.getFileName(filesList[index+2]).find(fileName))):
+            elif(fileName.replace(".jpg.aux","") == FileManipulators.getFileName(filesList[index+1]).replace(".jpg.aux","") and fileName.replace(".jpg.aux","") == FileManipulators.getFileName(filesList[index+2]).replace(".jpg.aux","")):      
                 extension1=FileManipulators.getExtension(filesList[index+1])
                 currentFileTypes.remove(extension)
                 if(extension1 in currentFileTypes):
@@ -339,14 +331,17 @@ class MainApp(tk.Tk):
             else:       #if next two fileNames do not match it means we cannot process them
                 badFilesList.append(file)
 
-        #TODO build a function to popup an errorMessage about the bad files
-        #TODO build a function to create a text file containing bad files
+        if badFilesList != []:
+            badFilePath=FileManipulators.create_badFile_file()
+            with open(badFilePath, 'a') as writer:
+                for file in badFilesList:
+                    writer.write(file+"\n")
+            self.ErrorBox(f"A list of invalid files have been written to: ${badFilePath}")
         return goodFilesList
 
     def populateFilesList(self, filePath):
          #Update the list box
         filesList=self.create_file_list(filePath)
-
         validFilesList=self.createValidFilesList(filesList)
 
         #delete everything from listbox first to ensure clean insert
@@ -402,13 +397,13 @@ class MainApp(tk.Tk):
         """
         destinationPath = self.pathDestinationPathlabel.cget("text")
         if destinationPath == "":
-            return FileManipulators.createDestinationFolder(self.logger)
+            return FileManipulators.createDestinationFolder()
         else:
             return Path(destinationPath)
 
-    def chooseDestination(self, logger):
+    def chooseDestination(self):
         destinationPath=self.getDestinationPath()
-        FileManipulators.openResult(logger,destinationPath)
+        FileManipulators.openResult(destinationPath)
 
     def processFiles(self,sourcePath,ArrayoffilesList,destinationPath):
         """processFiles inserts all the valid files from the listbox into the csv file at the location specified by destinationPath
@@ -450,8 +445,6 @@ class MainApp(tk.Tk):
         #At the end check if at least one set of .wld,.jpg,.xml file was converted to CSV successfully.
         if successfulWrite:
             self.SuccessMsgBox(destinationPath)
-        if not successfulWrite:
-            self.alertWrite(False,destinationPath)
 
     def ConvertCSV(self):
         """"Creates a csv file from the files in the listbox.
@@ -470,9 +463,7 @@ class MainApp(tk.Tk):
         destinationPath=self.getDestinationPath()
         try:
             sourcePath=self.getSourcePath()
-            print(sourcePath)
         except  EmptySourcePath as emptySourcePathError:
-            self.logger.exception(emptySourcePathError)
             self.ErrorMsgBbox( emptySourcePathError.msg)
         filesList=self.readListbox()        #valid files from the listbox.
         ArrayoffilesList=FileManipulators.getListofFiles(filesList) 
@@ -480,21 +471,9 @@ class MainApp(tk.Tk):
         CSVFile=FileManipulators.createDestinationCSVFile(destinationPath)
 
         self.processFiles(sourcePath,ArrayoffilesList,CSVFile)
-        FileManipulators.delete_empty_file(CSVFile,self.logger)
+        FileManipulators.delete_empty_file(CSVFile)
 
 if __name__ == "__main__":
-    #Creates a logger and the corresponding logfile.
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
-    log_file=make_log_file_path()
-
-    create_filehandler_logger(log_file)
-
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
     #Runs App
-    app=MainApp(logger)
+    app=MainApp()
     app.mainloop()
